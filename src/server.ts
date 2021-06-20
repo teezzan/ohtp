@@ -7,11 +7,11 @@ import winston from "winston";
 import { createConnection, ConnectionOptions } from "typeorm";
 import "reflect-metadata";
 
-import { logger } from "./logger";
-import { config } from "./config";
-import { unprotectedRouter } from "./unprotectedRoutes";
-import { protectedRouter } from "./protectedRoutes";
-import { cron } from "./cron";
+import { logger } from "./utils/logger";
+import { config } from "./utils/config";
+import { unprotectedRouter } from "./routes/unprotectedRoutes";
+import { protectedRouter } from "./routes/protectedRoutes";
+import { cron } from "./utils/cron";
 
 const connectionOptions: ConnectionOptions = {
     type: "postgres",
@@ -37,12 +37,12 @@ createConnection(connectionOptions).then(async () => {
 
     // Provides important security headers to make your app more secure
     app.use(helmet.contentSecurityPolicy({
-        directives:{
-          defaultSrc:["'self'"],
-          scriptSrc:["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
-          styleSrc:["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
-          fontSrc:["'self'","fonts.gstatic.com"],
-          imgSrc:["'self'", "data:", "online.swagger.io", "validator.swagger.io"]
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            fontSrc: ["'self'", "fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "online.swagger.io", "validator.swagger.io"]
         }
     }));
 

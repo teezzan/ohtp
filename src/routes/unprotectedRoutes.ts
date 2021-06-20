@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { general } from "./controller";
+import { general } from "../controller";
 
 const unprotectedRouter = new Router();
 

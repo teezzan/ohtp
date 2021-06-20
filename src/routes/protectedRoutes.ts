@@ -1,5 +1,5 @@
 import { SwaggerRouter } from "koa-swagger-decorator";
-import { user } from "./controller";
+import { user } from "../controller";
 
 const protectedRouter = new SwaggerRouter();
 
@@ -13,9 +13,9 @@ protectedRouter.delete("/testusers", user.deleteTestUsers);
 
 // Swagger endpoint
 protectedRouter.swagger({
-    title: "node-typescript-koa-rest",
-    description: "API REST using NodeJS and KOA framework, typescript. TypeORM for SQL with class-validators. Middlewares JWT, CORS, Winston Logger.",
-    version: "1.8.0"
+    title: "ohtp",
+    description: "Ohtp is a secured otp service.",
+    version: "1.0.0"
 });
 
 // mapDir will scan the input dir, and automatically call router.map to all Router Class
