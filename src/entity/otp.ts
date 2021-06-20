@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, ManyToOne } from "typeorm";
-import { IsDate, IsEmail, IsEnum, IsOptional, Length } from "class-validator";
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsOptional, Length } from "class-validator";
 import { Project } from "./project";
 
 export enum Medium {
@@ -55,6 +55,10 @@ export class Otp extends BaseEntity {
     @IsDate()
     expiry: Date;
 
+    @Column()
+    @IsBoolean()
+    isActive: boolean;
+
     @ManyToOne(type => Project, project => project.otps)
     project: Project;
 
@@ -62,5 +66,13 @@ export class Otp extends BaseEntity {
 
 export const otpSchema = {
     id: { type: "string", required: true, example: "aed3-hfw" },
-    name: { type: "string", required: true, example: "Cdenv" }
+    value: { type: "string", required: true, example: "1023423" },
+    meta: { type: "string", required: true, example: "{'name':'teezzan'}" },
+    medium: { type: "string", required: true, example: "email" },
+    type: { type: "string", required: true, example: "url" },
+    recipientPhone: { type: "string", required: false, example: "2348112233445" },
+    recipientEmail: { type: "string", required: false, example: "teegge@gmail.com" },
+    expiry: { type: "Date", required: true, example: "2021-06-20T11:48:27.777Z" },
+    isActive: { type: "boolean", required: true, example: true },
+    project: { type: "string", required: true, example: "aed3-hfw" },
 };
