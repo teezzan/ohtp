@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
-import { IsDate, IsEmail, IsOptional, Length } from "class-validator";
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, ManyToOne } from "typeorm";
+import { IsDate, IsEmail, IsEnum, IsOptional, Length } from "class-validator";
+import { Project } from "./project";
 
 export enum Medium {
     SMS = "sms",
@@ -25,6 +26,20 @@ export class Otp extends BaseEntity {
     @Length(0, 800)
     meta: string;
 
+    @Column({
+        type: "enum",
+        enum: Medium
+    })
+    @IsEnum(Medium)
+    medium: Medium;
+
+    @Column({
+        type: "enum",
+        enum: Type
+    })
+    @IsEnum(Type)
+    type: Type;
+
     @Column({ length: 30, nullable: true })
     @IsOptional()
     @Length(4, 30)
@@ -40,8 +55,8 @@ export class Otp extends BaseEntity {
     @IsDate()
     expiry: Date;
 
-
-
+    @ManyToOne(type => Project, project => project.otps)
+    project: Project;
 
 }
 
