@@ -16,6 +16,18 @@ export class Project extends BaseEntity {
     @OneToMany(type => Otp, otp => otp.project)
     otps: Otp[];
 
+    @Column({
+        length: 80
+    })
+    @Length(10, 80)
+    private_key: string;
+
+    @Column({
+        length: 80
+    })
+    @Length(10, 80)
+    public_key: string;
+    
 }
 
 export const projectSchema = {
