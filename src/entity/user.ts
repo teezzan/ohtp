@@ -18,6 +18,12 @@ export class User {
     @Length(10, 100)
     @IsEmail()
     email: string;
+
+    @Column({
+        length: 80
+    })
+    @Length(10, 80)
+    password: string;
 }
 
 export const userSchema = {
