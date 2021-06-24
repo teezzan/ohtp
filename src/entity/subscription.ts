@@ -1,10 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, ManyToOne, JoinColumn } from "typeorm";
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsOptional, Length, IsNumber } from "class-validator";
+import {  IsDate, Length, IsNumber } from "class-validator";
 import { Project } from "./project";
 
 
 @Entity()
-export class Otp extends BaseEntity {
+export class Subscription extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
