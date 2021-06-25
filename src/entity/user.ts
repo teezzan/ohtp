@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
-import { Length, IsEmail } from "class-validator";
+import { Length, IsEmail, IsDate } from "class-validator";
 
 @Entity()
 export class User {
@@ -24,6 +24,16 @@ export class User {
     })
     @Length(10, 80)
     password: string;
+
+    @Column({
+        length: 20
+    })
+    @Length(10, 20)
+    otp: string;
+
+    @Column({ type: "timestamptz" })
+    @IsDate()
+    otp_expiry: Date;
 }
 
 export const userSchema = {
