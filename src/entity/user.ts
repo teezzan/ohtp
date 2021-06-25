@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
-import { Length, IsEmail, IsDate } from "class-validator";
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
+import { Length, IsEmail, IsDate, IsBoolean, IsOptional } from "class-validator";
 
 @Entity()
-export class User {
+export class User  extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -13,31 +13,47 @@ export class User {
     name: string;
 
     @Column({
-        length: 100
+        length: 100,
+        unique: true
     })
     @Length(10, 100)
     @IsEmail()
     email: string;
 
     @Column({
-        length: 80
+        length: 100
     })
-    @Length(10, 80)
+    @Length(10, 100)
     password: string;
 
     @Column({
-        length: 20
+        length: 20,
+        nullable: true,
+        default: null
     })
-    @Length(10, 20)
+    @Length(0, 20)
+    @IsOptional()
     otp: string;
 
-    @Column({ type: "timestamptz" })
+    @Column({ type: "timestamptz",nullable: true, default: null})
     @IsDate()
+    @IsOptional()
     otp_expiry: Date;
+
+    @Column({default: false})
+    @IsBoolean()
+    @IsOptional()
+    isVerified: boolean;
+
+
 }
 
 export const userSchema = {
-    id: { type: "number", required: true, example: 1 },
+    id: { type: "number", required: false, example: 1 },
     name: { type: "string", required: true, example: "Javier" },
-    email: { type: "string", required: true, example: "avileslopez.javier@gmail.com" }
+    email: { type: "string", required: true, example: "avileslopez.javier@gmail.com" },
+    password: { type: "string", required: true, example: "avileslopez" },
+    otp: { type: "string", required: false, example: "128127" },
+    otp_expiry: { type: "string", required: false, example: "2021-06-20T11:48:27.777Z"},
+    isVerified: { type: "boolean", required: false, example: false },
 };

@@ -14,7 +14,7 @@ export enum Type {
 }
 
 @Entity()
-export class Otp{
+export class Otp extends BaseEntity{
     @PrimaryGeneratedColumn("uuid")
     id: string;
 

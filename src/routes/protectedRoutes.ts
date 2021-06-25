@@ -4,12 +4,12 @@ import { user } from "../controller";
 const protectedRouter = new SwaggerRouter();
 
 // USER ROUTES
-protectedRouter.get("/users", user.getUsers);
-protectedRouter.get("/users/:id", user.getUser);
+// protectedRouter.get("/users", user.getUsers);
+// protectedRouter.get("/users/:id", user.getUser);
 protectedRouter.post("/users", user.createUser);
-protectedRouter.put("/users/:id", user.updateUser);
-protectedRouter.delete("/users/:id", user.deleteUser);
-protectedRouter.delete("/testusers", user.deleteTestUsers);
+// protectedRouter.put("/users/:id", user.updateUser);
+// protectedRouter.delete("/users/:id", user.deleteUser);
+// protectedRouter.delete("/testusers", user.deleteTestUsers);
 
 // Swagger endpoint
 protectedRouter.swagger({

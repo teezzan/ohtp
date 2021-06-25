@@ -4,7 +4,7 @@ import { Project } from "./project";
 
 
 @Entity()
-export class Subscription{
+export class Subscription extends BaseEntity{ 
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
