@@ -4,6 +4,7 @@
   "description": "A secured OTP service.",
   "main": "dist/server.js",
   "scripts": {
+    "dev": "nodemon --ignore tests/ --watch src -e ts,tsx --exec ts-node src/server.ts",
     "watch-server": "nodemon --ignore tests/ --watch src -e ts,tsx --exec ts-node src/server.ts",
     "build-ts": "tsc",
     "copy-static-assets": "ts-node copyStaticAssets.ts",

@@ -10,7 +10,7 @@ import "reflect-metadata";
 import { logger } from "./utils/logger";
 import { config } from "./utils/config";
 import { unprotectedRouter } from "./routes/unprotectedRoutes";
-import { protectedRouter } from "./routes/protectedRoutes";
+import { userRoute } from "./routes/userRoute";
 import { cron } from "./utils/cron";
 
 const connectionOptions: ConnectionOptions = {
@@ -63,7 +63,7 @@ createConnection(connectionOptions).then(async () => {
     // app.use(jwt({ secret: config.jwtSecret }).unless({ path: [/^\/swagger-/] }));
 
     // These routes are protected by the JWT middleware, also include middleware to respond with "Method Not Allowed - 405".
-    app.use(protectedRouter.routes()).use(protectedRouter.allowedMethods());
+    app.use(userRoute.routes()).use(userRoute.allowedMethods());
 
     // Register cron job to do any action needed
     cron.start();
