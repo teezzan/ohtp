@@ -1,10 +1,14 @@
 import { Context } from "koa";
 import { getManager, Repository, Not, Equal, Like } from "typeorm";
 import { validate, ValidationError } from "class-validator";
+import bcrypt from "bcrypt";
 import { request, summary, path, body, responsesAll, tagsAll } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
 import { Login } from "../interfaces/utils";
-import bcrypt from "bcrypt";
+import { publify } from "../utils/publify";
+
+let public_field =["id", "name", "email", "isVerified"];
+
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
 @tagsAll(["User"])
@@ -64,7 +68,7 @@ export default class UserController {
         } else if (await bcrypt.compare(loginData.password, user.password)) {
 
             ctx.status = 201;
-            ctx.body = user;
+            ctx.body = await publify(user, public_field) ;
 
         }
         else {

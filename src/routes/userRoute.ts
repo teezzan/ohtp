@@ -1,12 +1,15 @@
 import { SwaggerRouter } from "koa-swagger-decorator";
 import { user } from "../controller";
 
-const userRoute = new SwaggerRouter();
+const userRoute = new SwaggerRouter({
+    prefix: '/users'
+});
 
+userRoute.post("/register", user.createUser);
+userRoute.post("/login", user.login);
 // USER ROUTES
 // userRoute.get("/users", user.getUsers);
 // userRoute.get("/users/:id", user.getUser);
-userRoute.post("/users", user.createUser);
 // userRoute.put("/users/:id", user.updateUser);
 // userRoute.delete("/users/:id", user.deleteUser);
 // userRoute.delete("/testusers", user.deleteTestUsers);

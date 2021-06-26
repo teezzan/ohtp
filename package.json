@@ -65,6 +65,7 @@
   "dependencies": {
     "@koa/cors": "^3.1.0",
     "@koa/router": "^10.0.0",
+    "@types/lodash": "^4.14.170",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
     "cron": "^1.8.2",
@@ -74,6 +75,7 @@
     "koa-helmet": "^6.1.0",
     "koa-jwt": "^4.0.0",
     "koa-swagger-decorator": "^1.6.4",
+    "lodash": "^4.17.21",
     "pg": "^8.5.1",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.32",
