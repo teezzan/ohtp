@@ -7,7 +7,7 @@ import { User, userSchema } from "../entity/user";
 import { Login } from "../interfaces/utils";
 import { publify } from "../utils/publify";
 
-let public_field =["id", "name", "email", "isVerified"];
+let public_field = ["id", "name", "email", "isVerified"];
 
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
@@ -68,7 +68,7 @@ export default class UserController {
         } else if (await bcrypt.compare(loginData.password, user.password)) {
 
             ctx.status = 201;
-            ctx.body = await publify(user, public_field) ;
+            ctx.body = await publify(user, public_field);
 
         }
         else {
