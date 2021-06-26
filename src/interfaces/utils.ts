@@ -1,4 +1,4 @@
-import { Length, IsEmail, IsDate, IsBoolean, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsString } from "class-validator";
 
 export class Login {
     @IsString()
@@ -9,3 +9,7 @@ export class Login {
     password: string;
 
   }
+  export const loginSchema = {
+    email: { type: "string", required: true, example: "avileslopez.javier@gmail.com" },
+    password: { type: "string", required: true, example: "avileslopez" }
+};

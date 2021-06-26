@@ -1,5 +1,6 @@
 import { SwaggerRouter } from "koa-swagger-decorator";
 import { user } from "../controller";
+import path from 'path';
 
 const userRoute = new SwaggerRouter({
     prefix: '/users'
@@ -22,6 +23,7 @@ userRoute.swagger({
 });
 
 // mapDir will scan the input dir, and automatically call router.map to all Router Class
-userRoute.mapDir(__dirname);
+const dirPath = path.join(__dirname,'../');
+userRoute.mapDir(dirPath);
 
 export { userRoute };

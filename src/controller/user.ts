@@ -4,7 +4,7 @@ import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
 import { request, summary, path, body, responsesAll, tagsAll } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
-import { Login } from "../interfaces/utils";
+import { Login, loginSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
 
 let public_field = ["id", "name", "email", "isVerified"];
@@ -20,7 +20,7 @@ export default class UserController {
         const userToBeSaved: User = User.create({
             name: ctx.request.body.name,
             email: ctx.request.body.email,
-            password: bcrypt.hashSync(ctx.request.body.password, 8),
+            password: ctx.request.body.password,
             otp: null
         });
         // validate user entity
@@ -35,9 +35,10 @@ export default class UserController {
             ctx.status = 400;
             ctx.body = "The specified e-mail address already exists";
         } else {
+            userToBeSaved.password = bcrypt.hashSync(ctx.request.body.password, 8);
             const user = await User.save(userToBeSaved);
             ctx.status = 201;
-            ctx.body = user;
+            ctx.body = await publify(user, public_field);
 
         }
 
@@ -45,7 +46,7 @@ export default class UserController {
 
     @request("post", "/login")
     @summary("Login a user")
-    @body(userSchema)
+    @body(loginSchema)
 
     public static async login(ctx: Context): Promise<void> {
         const loginData: Login = {

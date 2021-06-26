@@ -9,21 +9,22 @@ export class User  extends BaseEntity{
     @Column({
         length: 80
     })
-    @Length(10, 80)
+    @Length(1, 80)
     name: string;
 
     @Column({
         length: 100,
         unique: true
     })
-    @Length(10, 100)
+    @Length(1, 100)
     @IsEmail()
     email: string;
 
     @Column({
-        length: 100
+        length: 300,
+        nullable: true
     })
-    @Length(10, 100)
+    @Length(8, 300)
     password: string;
 
     @Column({
