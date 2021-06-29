@@ -27,6 +27,7 @@ userRoute.post("/login", user.login);
 
 userRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 userRoute.get("/me", user.getMe);
+userRoute.post("/me", user.editUser);
 
 // USER ROUTES
 // userRoute.get("/users", user.getUsers);

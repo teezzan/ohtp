@@ -4,7 +4,7 @@ import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
 import { request, summary, path, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
-import { Login, loginSchema } from "../interfaces/utils";
+import { editSchema, EditUser, Login, loginSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
 
 let public_field = ["id", "name", "email", "isVerified", "token"];
@@ -102,4 +102,53 @@ export default class UserController {
         }
 
     }
+
+    @request("post", "/me")
+    @summary("Edit a user Details")
+    @body(editSchema)
+    @security([{ Bearer: [] }])
+    public static async editUser(ctx: Context): Promise<void> {
+        const editData: EditUser = {
+            email: ctx.request.body.email,
+            password: ctx.request.body.password,
+            name: ctx.request.body.name
+        }
+
+        const errors: ValidationError[] = await validate(editData); // errors is an array of validation errors
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        let userToBeSaved: any = {};
+        if (editData.password) {
+            userToBeSaved.password = bcrypt.hashSync(editData.password, 8);
+        }
+        if (editData.name) {
+            userToBeSaved.name = editData.name;
+        }
+        if (editData.email) {
+            let verifyuser = await User.findOne({ email: editData.email });
+            if (verifyuser &&  verifyuser.id !== ctx.state.user.id) {
+                ctx.status = 400;
+                ctx.body = "The specified e-mail address already exists";
+                return;
+            }
+            else {
+
+                userToBeSaved.email = editData.email;
+            }
+        }
+        let user = await User.save({ id: ctx.state.user.id, ...userToBeSaved });
+        ctx.status = 201;
+        ctx.body = await publify(user, public_field);
+
+    }
+
+    //edit profile
+    //forget password
+    //verify
+    //change pass with token
+    //verify email via url or email otp
 }
