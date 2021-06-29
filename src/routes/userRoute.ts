@@ -6,6 +6,21 @@ import path from 'path';
 const userRoute = new SwaggerRouter({
     prefix: '/users'
 });
+// Swagger endpoint
+userRoute.swagger({
+    title: "ohtp",
+    description: "Ohtp is a secured otp service.",
+    version: "1.0.0",
+    swaggerOptions: {
+        securityDefinitions: {
+            Bearer: {
+                type: 'apiKey',
+                in: 'header',
+                name: 'Authorization',
+            },
+        },
+    },
+});
 
 userRoute.post("/register", user.createUser);
 userRoute.post("/login", user.login);
@@ -20,15 +35,9 @@ userRoute.get("/me", user.getMe);
 // userRoute.delete("/users/:id", user.deleteUser);
 // userRoute.delete("/testusers", user.deleteTestUsers);
 
-// Swagger endpoint
-userRoute.swagger({
-    title: "ohtp",
-    description: "Ohtp is a secured otp service.",
-    version: "1.0.0"
-});
 
 // mapDir will scan the input dir, and automatically call router.map to all Router Class
-const dirPath = path.join(__dirname,'../');
+const dirPath = path.join(__dirname, '../');
 userRoute.mapDir(dirPath);
 
 export { userRoute };

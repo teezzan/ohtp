@@ -1,9 +1,8 @@
 import { Context } from "koa";
 import JsonWebToken from 'jsonwebtoken';
-import { getManager, Repository, Not, Equal, Like } from "typeorm";
 import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
-import { request, summary, path, body, responsesAll, tagsAll } from "koa-swagger-decorator";
+import { request, summary, path, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
 import { Login, loginSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
@@ -85,14 +84,15 @@ export default class UserController {
 
     }
 
-    @request("post", "/me")
+    @request("get", "/me")
     @summary("Get Current user")
+    @security([{ Bearer: [] }])
     public static async getMe(ctx: Context): Promise<void> {
 
 
         let user = await User.findOne({ id: ctx.state.user.id });
         if (!user) {
-            // return BAD REQUEST status code and email already exists error
+            // return BAD REQUEST status code and user already exists error
             ctx.status = 400;
             ctx.body = "User doesn't Exist";
         }
