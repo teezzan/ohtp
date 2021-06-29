@@ -1,4 +1,5 @@
 import { Context } from "koa";
+import JsonWebToken from 'jsonwebtoken';
 import { getManager, Repository, Not, Equal, Like } from "typeorm";
 import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
@@ -7,7 +8,7 @@ import { User, userSchema } from "../entity/user";
 import { Login, loginSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
 
-let public_field = ["id", "name", "email", "isVerified"];
+let public_field = ["id", "name", "email", "isVerified", "token"];
 
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
@@ -68,8 +69,13 @@ export default class UserController {
             ctx.body = "The specified e-mail address does not exists";
         } else if (await bcrypt.compare(loginData.password, user.password)) {
 
+            let token = JsonWebToken.sign({
+                id: user.id,
+                email: user.email
+            }, process.env.JWT_SECRET);
             ctx.status = 201;
-            ctx.body = await publify(user, public_field);
+            ctx.body = await publify({ ...user, token }, public_field);
+
 
         }
         else {
@@ -84,7 +90,7 @@ export default class UserController {
     public static async getMe(ctx: Context): Promise<void> {
 
 
-        let user = await User.findOne({ id: ctx.user.id });
+        let user = await User.findOne({ id: ctx.state.user.id });
         if (!user) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = 400;

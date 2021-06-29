@@ -1,5 +1,6 @@
 import { SwaggerRouter } from "koa-swagger-decorator";
 import { user } from "../controller";
+import jwt from "koa-jwt";
 import path from 'path';
 
 const userRoute = new SwaggerRouter({
@@ -8,6 +9,8 @@ const userRoute = new SwaggerRouter({
 
 userRoute.post("/register", user.createUser);
 userRoute.post("/login", user.login);
+
+userRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 userRoute.get("/me", user.getMe);
 
 // USER ROUTES
