@@ -79,4 +79,21 @@ export default class UserController {
 
     }
 
+    @request("post", "/me")
+    @summary("Get Current user")
+    public static async getMe(ctx: Context): Promise<void> {
+
+
+        let user = await User.findOne({ id: ctx.user.id });
+        if (!user) {
+            // return BAD REQUEST status code and email already exists error
+            ctx.status = 400;
+            ctx.body = "User doesn't Exist";
+        }
+        else {
+            ctx.status = 200;
+            ctx.body = await publify(user, public_field);
+        }
+
+    }
 }

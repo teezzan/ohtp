@@ -8,6 +8,8 @@ const userRoute = new SwaggerRouter({
 
 userRoute.post("/register", user.createUser);
 userRoute.post("/login", user.login);
+userRoute.get("/me", user.getMe);
+
 // USER ROUTES
 // userRoute.get("/users", user.getUsers);
 // userRoute.get("/users/:id", user.getUser);

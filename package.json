@@ -70,6 +70,7 @@
     "class-validator": "^0.13.1",
     "cron": "^1.8.2",
     "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-helmet": "^6.1.0",
