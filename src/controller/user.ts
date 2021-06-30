@@ -146,9 +146,9 @@ export default class UserController {
 
     }
 
-    //edit profile
     //forget password
     //verify
     //change pass with token
+    
     //verify email via url or email otp
 }
