@@ -4,9 +4,9 @@ import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
 import { request, summary, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
-import { editSchema, EditUser, ForgetPassword, Login, loginSchema } from "../interfaces/utils";
+import { editSchema, EditUser, ForgetPassword, forgetpasswordSchema, Login, loginSchema, Token, tokenSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
-import { EncryptPayload, GenerateOTP } from "../utils/crypto";
+import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
 import { config } from "../utils/config";
 
 const public_field = ["id", "name", "email", "isVerified", "token"];
@@ -149,9 +149,9 @@ export default class UserController {
     }
 
     //forget password
-    @request("post", "/forget-password")
+    @request("post", "/forgetpassword")
     @summary("Send Password retrieval verification mail to a user")
-    @body(loginSchema)
+    @body(forgetpasswordSchema)
 
     public static async forgetPassword(ctx: Context): Promise<void> {
         const forgetPasswordData: ForgetPassword = {
@@ -166,6 +166,7 @@ export default class UserController {
             return;
         }
         const user = await User.findOne({ email: forgetPasswordData.email });
+        console.log(user);
         if (!user) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
@@ -190,6 +191,48 @@ export default class UserController {
 
     }
     //verify
+    @request("post", "/verifytoken")
+    @summary("verify token mailed to a user")
+    @body(tokenSchema)
+
+    public static async verifyforgetPasswordToken(ctx: Context): Promise<void> {
+        const tokenData: Token = {
+            token: ctx.request.body.token
+        };
+
+        const errors: ValidationError[] = await validate(tokenData); // errors is an array of validation errors
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const status = await DecryptPayload(tokenData.token);
+
+        const user = await User.findOne({
+            id: status.id,
+            otp: status.otp,
+        });
+        console.log(user);
+        if (!user) {
+            // return BAD REQUEST status code and email already exists error
+            ctx.status = 400;
+            ctx.body = "The specified e-mail address does not exists";
+        } else {
+            await User.update({ id: user.id }, { otp: null });
+            console.log(`${config.serverURL}/verify/${token}`);
+
+            ctx.status = 200;
+            ctx.body = {
+                message: "Email Sent to Email.",
+                url: `${config.serverURL}/verify/${token}`
+            };
+
+
+        }
+
+    }
+
     //change pass with token
 
     //verify email via url or email otp

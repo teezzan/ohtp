@@ -1,10 +1,10 @@
 import { SwaggerRouter } from "koa-swagger-decorator";
 import { user } from "../controller";
 import jwt from "koa-jwt";
-import path from 'path';
+import path from "path";
 
 const userRoute = new SwaggerRouter({
-    prefix: '/users'
+    prefix: "/users"
 });
 // Swagger endpoint
 userRoute.swagger({
@@ -14,9 +14,9 @@ userRoute.swagger({
     swaggerOptions: {
         securityDefinitions: {
             Bearer: {
-                type: 'apiKey',
-                in: 'header',
-                name: 'Authorization',
+                type: "apiKey",
+                in: "header",
+                name: "Authorization",
             },
         },
     },
@@ -24,6 +24,7 @@ userRoute.swagger({
 
 userRoute.post("/register", user.createUser);
 userRoute.post("/login", user.login);
+userRoute.post("/forgetpassword", user.forgetPassword);
 
 userRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 userRoute.get("/me", user.getMe);
@@ -38,7 +39,7 @@ userRoute.post("/me", user.editUser);
 
 
 // mapDir will scan the input dir, and automatically call router.map to all Router Class
-const dirPath = path.join(__dirname, '../');
+const dirPath = path.join(__dirname, "../");
 userRoute.mapDir(dirPath);
 
 export { userRoute };

@@ -43,3 +43,22 @@ export class ForgetPassword {
 export const forgetpasswordSchema = {
   email: { type: "string", required: true, example: "avileslopez.javier@gmail.com" }
 };
+export class Token {
+  @IsString()
+  token: string;
+}
+export const tokenSchema = {
+  token: { type: "string", required: true, example: "avileslopez.javier@gmail.com" }
+};
+
+export class PasswordAndToken {
+  @IsString()
+  token: string;
+
+  @IsString()
+  password: string;
+}
+export const passwordTokenSchema = {
+  token: { type: "string", required: true, example: "avileslopez.javier@gmail.com" },
+  password: { type: "string", required: true, example: "sddj34edcom" }
+};
