@@ -41,6 +41,7 @@ export default class UserController {
         } else {
             userToBeSaved.password = bcrypt.hashSync(ctx.request.body.password, 8);
             const user = await User.save(userToBeSaved);
+            this.generateVerifyandSend(user.id);
             ctx.status = 201;
             ctx.body = await publify(user, public_field);
 
@@ -67,10 +68,9 @@ export default class UserController {
         }
         const user = await User.findOne({ email: loginData.email });
         if (!user) {
-            // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
             ctx.body = "The specified e-mail address does not exists";
-        } else if (await bcrypt.compare(loginData.password, user.password)) {
+        } else if (await bcrypt.compare(loginData.password, user.password) && (user.isVerified)) {
 
             const token = JsonWebToken.sign({
                 id: user.id,
@@ -78,8 +78,13 @@ export default class UserController {
             }, process.env.JWT_SECRET);
             ctx.status = 201;
             ctx.body = await publify({ ...user, token }, public_field);
-
-
+        }
+        else if (user.isVerified == false) {
+            await this.generateVerifyandSend(user.id);
+            ctx.status = 200;
+            ctx.body = {
+                message: "Please Verify Your Account. An Email has been Sent."
+            };
         }
         else {
             ctx.status = 400;
@@ -180,10 +185,9 @@ export default class UserController {
             });
             await User.update({ id: user.id }, { otp });
             console.log(`${config.serverURL}/verify/${token}`);
-
             ctx.status = 200;
             ctx.body = {
-                message: "Email Sent to Email.",
+                message: "Email Sent.",
                 url: `${config.serverURL}/verify/${token}`
             };
 
@@ -265,9 +269,56 @@ export default class UserController {
                 message: "Success",
             };
 
+        }
+
+    }
+
+    @request("post", "/verify")
+    @summary("Verify Account")
+    @body(tokenSchema)
+
+    public static async verifyAccount(ctx: Context): Promise<void> {
+        const tokenData: Token = {
+            token: ctx.request.body.token
+        };
+
+        const errors: ValidationError[] = await validate(tokenData);
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const status = await DecryptPayload(tokenData.token);
+
+        const user = await User.findOne({
+            id: status.id,
+            otp: status.otp,
+        });
+        if (!user) {
+            ctx.status = 400;
+            ctx.body = "Invalid Token";
+        } else {
+            await User.update({ id: user.id }, { otp: null, isVerified: true });
+
+            ctx.status = 200;
+            ctx.body = {
+                message: "Verified",
+            };
+
 
         }
 
     }
-    //verify email via url or email otp
+
+    private static generateVerifyandSend = async (id: number): Promise<void> => {
+        const otp = GenerateOTP();
+        const token = await EncryptPayload({
+            otp,
+            id
+        });
+        await User.update({ id }, { otp });
+        //send email
+        console.log(`${config.serverURL}/accountverify/${token}`);
+    }
 }
