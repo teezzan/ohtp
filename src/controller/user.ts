@@ -168,7 +168,6 @@ export default class UserController {
             return;
         }
         const user = await User.findOne({ email: forgetPasswordData.email });
-        console.log(user);
         if (!user) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
@@ -215,9 +214,7 @@ export default class UserController {
             id: status.id,
             otp: status.otp,
         });
-        console.log(user);
         if (!user) {
-            // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
             ctx.body = "Invalid Token";
         } else {
@@ -234,7 +231,7 @@ export default class UserController {
 
     }
 
-    @request("post", "/changepassword")
+    @request("post", "/resetpassword")
     @summary("Change password with token")
     @body(passwordTokenSchema)
 
@@ -257,9 +254,7 @@ export default class UserController {
             id: status.id,
             otp: status.otp,
         });
-        console.log(user);
         if (!user) {
-            // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
             ctx.body = "Invalid Token";
         } else {

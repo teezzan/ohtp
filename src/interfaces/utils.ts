@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsOptional, IsString, Length } from "class-validator";
 
 export class Login {
   @IsString()
@@ -6,6 +6,7 @@ export class Login {
   email: string;
 
   @IsString()
+  @Length(6, 24)
   password: string;
 
 }
@@ -22,6 +23,7 @@ export class EditUser {
 
   @IsString()
   @IsOptional()
+  @Length(6, 24)
   password: string;
 
   @IsString()
@@ -56,6 +58,7 @@ export class PasswordAndToken {
   token: string;
 
   @IsString()
+  @Length(6, 24)
   password: string;
 }
 export const passwordTokenSchema = {
