@@ -2,10 +2,12 @@ import { Context } from "koa";
 import JsonWebToken from "jsonwebtoken";
 import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
-import { request, summary, path, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
+import { request, summary, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
-import { editSchema, EditUser, Login, loginSchema } from "../interfaces/utils";
+import { editSchema, EditUser, ForgetPassword, Login, loginSchema } from "../interfaces/utils";
 import { publify } from "../utils/publify";
+import { EncryptPayload, GenerateOTP } from "../utils/crypto";
+import { config } from "../utils/config";
 
 const public_field = ["id", "name", "email", "isVerified", "token"];
 
@@ -147,6 +149,46 @@ export default class UserController {
     }
 
     //forget password
+    @request("post", "/forget-password")
+    @summary("Send Password retrieval verification mail to a user")
+    @body(loginSchema)
+
+    public static async forgetPassword(ctx: Context): Promise<void> {
+        const forgetPasswordData: ForgetPassword = {
+            email: ctx.request.body.email
+        };
+
+        const errors: ValidationError[] = await validate(forgetPasswordData); // errors is an array of validation errors
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const user = await User.findOne({ email: forgetPasswordData.email });
+        if (!user) {
+            // return BAD REQUEST status code and email already exists error
+            ctx.status = 400;
+            ctx.body = "The specified e-mail address does not exists";
+        } else {
+            const otp = GenerateOTP();
+            const token = await EncryptPayload({
+                otp,
+                id: user.id
+            });
+            await User.update({ id: user.id }, { otp });
+            console.log(`${config.serverURL}/verify/${token}`);
+
+            ctx.status = 200;
+            ctx.body = {
+                message: "Email Sent to Email.",
+                url: `${config.serverURL}/verify/${token}`
+            };
+
+
+        }
+
+    }
     //verify
     //change pass with token
 
