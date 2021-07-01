@@ -4,7 +4,9 @@ import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
 import { request, summary, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
 import { User, userSchema } from "../entity/user";
-import { editSchema, EditUser, ForgetPassword, forgetpasswordSchema, Login, loginSchema, Token, tokenSchema } from "../interfaces/utils";
+import {
+    editSchema, EditUser, ForgetPassword, forgetpasswordSchema, Login, loginSchema, Token, tokenSchema, passwordTokenSchema, PasswordAndToken
+} from "../interfaces/utils";
 import { publify } from "../utils/publify";
 import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
 import { config } from "../utils/config";
@@ -192,7 +194,7 @@ export default class UserController {
     }
     //verify
     @request("post", "/verifytoken")
-    @summary("verify token mailed to a user")
+    @summary("verify token Active ")
     @body(tokenSchema)
 
     public static async verifyforgetPasswordToken(ctx: Context): Promise<void> {
@@ -217,15 +219,14 @@ export default class UserController {
         if (!user) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = 400;
-            ctx.body = "The specified e-mail address does not exists";
+            ctx.body = "Invalid Token";
         } else {
+            // await User.update({ id: user.id }, { otp });
             await User.update({ id: user.id }, { otp: null });
-            console.log(`${config.serverURL}/verify/${token}`);
 
             ctx.status = 200;
             ctx.body = {
-                message: "Email Sent to Email.",
-                url: `${config.serverURL}/verify/${token}`
+                message: "Valid Token",
             };
 
 
@@ -233,7 +234,45 @@ export default class UserController {
 
     }
 
-    //change pass with token
+    @request("post", "/changepassword")
+    @summary("Change password with token")
+    @body(passwordTokenSchema)
 
+    public static async changePasswordwithToken(ctx: Context): Promise<void> {
+        const tokenData: PasswordAndToken = {
+            token: ctx.request.body.token,
+            password: ctx.request.body.password
+        };
+
+        const errors: ValidationError[] = await validate(tokenData);
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const status = await DecryptPayload(tokenData.token);
+
+        const user = await User.findOne({
+            id: status.id,
+            otp: status.otp,
+        });
+        console.log(user);
+        if (!user) {
+            // return BAD REQUEST status code and email already exists error
+            ctx.status = 400;
+            ctx.body = "Invalid Token";
+        } else {
+            await User.update({ id: user.id }, { otp: null, password: bcrypt.hashSync(tokenData.password, 8) });
+
+            ctx.status = 200;
+            ctx.body = {
+                message: "Success",
+            };
+
+
+        }
+
+    }
     //verify email via url or email otp
 }
