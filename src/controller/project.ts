@@ -8,13 +8,13 @@ import { config } from "../utils/config";
 import { createProjectSchema } from "../interfaces/project";
 import { Project } from "../entity/project";
 
-const public_field = ["id", "name", "email", "isVerified", "token"];
+const public_field = ["id", "name", "subscription"];
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
 @tagsAll(["Project"])
 export default class ProjectController {
 
-    @request("post", "/create")
+    @request("post", "/projects/create")
     @summary("Create a Project")
     @body(createProjectSchema)
     public static async createProject(ctx: Context): Promise<void> {
@@ -23,8 +23,19 @@ export default class ProjectController {
         });
 
         const errors: ValidationError[] = await validate(projectToBeSaved);
-
-
-
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const project = await Project.findOne({ name: projectToBeSaved.name });
+        if (!project) {
+            ctx.status = 400;
+            ctx.body = "The specified project exists";
+        }
+        else {
+            ctx.status = 200;
+            ctx.body = project;
+        }
     }
 }

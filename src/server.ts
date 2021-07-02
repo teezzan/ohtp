@@ -12,6 +12,7 @@ import { config } from "./utils/config";
 import { unprotectedRouter } from "./routes/unprotectedRoutes";
 import { userRoute } from "./routes/userRoute";
 import { cron } from "./utils/cron";
+import { SwaggerRouter } from "koa-swagger-decorator";
 
 const connectionOptions: ConnectionOptions = {
     type: "postgres",
@@ -55,6 +56,29 @@ createConnection(connectionOptions).then(async () => {
     // Enable bodyParser with default options
     app.use(bodyParser());
 
+
+
+    const swaggerRoute = new SwaggerRouter({
+        // prefix: "/api"
+    });
+    // Swagger endpoint
+    swaggerRoute.swagger({
+        title: "ohtp",
+        description: "Ohtp is a secured otp service.",
+        version: "1.0.0",
+        swaggerOptions: {
+            securityDefinitions: {
+                Bearer: {
+                    type: "apiKey",
+                    in: "header",
+                    name: "Authorization",
+                },
+            },
+        },
+    });
+    // const dirPath = path.join(__dirname, "../");
+    swaggerRoute.mapDir(__dirname);
+    app.use(swaggerRoute.routes()).use(swaggerRoute.allowedMethods());
     // these routes are NOT protected by the JWT middleware, also include middleware to respond with "Method Not Allowed - 405".
     // app.use(unprotectedRouter.routes()).use(unprotectedRouter.allowedMethods());
 

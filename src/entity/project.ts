@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany, OneToOne, JoinColumn, ManyToOne } from "typeorm";
-import { Length } from "class-validator";
+import { IsOptional, Length } from "class-validator";
 import { Otp } from "./otp";
 import { Subscription } from "./subscription";
 import { User } from "./user";
@@ -12,26 +12,24 @@ export class Project extends BaseEntity {
     @Column({
         length: 80
     })
-    @Length(10, 80)
+    @Length(0, 80)
     name: string;
 
     @OneToMany(type => Otp, otp => otp.project)
     otps: Otp[];
 
-    @Column({
-        length: 80, nullable: true, default: null
-    })
-    @Length(10, 80)
+    @Column({ length: 80, nullable: true, default: null })
+    @Length(1, 80)
+    @IsOptional()
     private_key: string;
 
-    @Column({
-        length: 80,
-        nullable: true, default: null
-    })
-    @Length(10, 80)
+    @Column({ length: 80, nullable: true, default: null })
+    @IsOptional()
+    @Length(1, 80)
     public_key: string;
 
     @OneToOne(() => Subscription)
+    @IsOptional()
     @JoinColumn()
     subscription: Subscription;
 

@@ -18,7 +18,7 @@ const public_field = ["id", "name", "email", "isVerified", "token"];
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
 @tagsAll(["User"])
 export default class UserController {
-    @request("post", "/register")
+    @request("post", "/users/register")
     @summary("Create a user")
     @body(userSchema)
     public static async createUser(ctx: Context): Promise<void> {
@@ -50,7 +50,7 @@ export default class UserController {
 
     }
 
-    @request("post", "/login")
+    @request("post", "/users/login")
     @summary("Login a user")
     @body(loginSchema)
 
@@ -98,7 +98,7 @@ export default class UserController {
 
     }
 
-    @request("get", "/me")
+    @request("get", "/users/me")
     @summary("Get Current user")
     @security([{ Bearer: [] }])
     public static async getMe(ctx: Context): Promise<void> {
@@ -117,7 +117,7 @@ export default class UserController {
 
     }
 
-    @request("post", "/me")
+    @request("post", "/users/me")
     @summary("Edit a user Details")
     @body(editSchema)
     @security([{ Bearer: [] }])
@@ -161,7 +161,7 @@ export default class UserController {
     }
 
     //forget password
-    @request("post", "/forgetpassword")
+    @request("post", "/users/forgetpassword")
     @summary("Send Password retrieval verification mail to a user")
     @body(forgetpasswordSchema)
 
@@ -201,7 +201,7 @@ export default class UserController {
 
     }
     //verify
-    @request("post", "/verifytoken")
+    @request("post", "/users/verifytoken")
     @summary("verify token Active ")
     @body(tokenSchema)
 
@@ -240,7 +240,7 @@ export default class UserController {
 
     }
 
-    @request("post", "/resetpassword")
+    @request("post", "/users/resetpassword")
     @summary("Change password with token")
     @body(passwordTokenSchema)
 
@@ -278,7 +278,7 @@ export default class UserController {
 
     }
 
-    @request("post", "/verify")
+    @request("post", "/users/verify")
     @summary("Verify Account")
     @body(tokenSchema)
 
