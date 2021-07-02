@@ -5,7 +5,6 @@ import { createProjectSchema } from "../interfaces/project";
 import { Project } from "../entity/project";
 import { Subscription } from "../entity/subscription";
 import { User } from "../entity/user";
-import { } from "../interfaces/user";
 import { publify } from "../utils/publify";
 import { config } from "../utils/config";
 
