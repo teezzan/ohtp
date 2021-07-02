@@ -27,6 +27,7 @@ userRoute.post("/login", user.login);
 userRoute.post("/forgetpassword", user.forgetPassword);
 userRoute.post("/verifytoken", user.verifyforgetPasswordToken);
 userRoute.post("/resetpassword", user.changePasswordwithToken);
+userRoute.post("/verify", user.verifyAccount);
 
 userRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 userRoute.get("/me", user.getMe);

@@ -42,7 +42,7 @@ export default class UserController {
         } else {
             userToBeSaved.password = bcrypt.hashSync(ctx.request.body.password, 8);
             const user = await User.save(userToBeSaved);
-            this.generateVerifyandSend(user);
+            UserController.generateVerifyandSend(user);
             ctx.status = 201;
             ctx.body = await publify(user, public_field);
 
@@ -68,10 +68,17 @@ export default class UserController {
             return;
         }
         const user = await User.findOne({ email: loginData.email });
+
+        console.log((await bcrypt.compare(loginData.password, user.password)));
         if (!user) {
             ctx.status = 400;
             ctx.body = "The specified e-mail address does not exists";
-        } else if (await bcrypt.compare(loginData.password, user.password) && (user.isVerified)) {
+        }
+        else if (!(await bcrypt.compare(loginData.password, user.password))) {
+            ctx.status = 400;
+            ctx.body = "Wrong Password";
+        }
+        else if (user.isVerified) {
 
             const token = JsonWebToken.sign({
                 id: user.id,
@@ -81,16 +88,13 @@ export default class UserController {
             ctx.body = await publify({ ...user, token }, public_field);
         }
         else if (user.isVerified == false) {
-            await this.generateVerifyandSend(user);
+            await UserController.generateVerifyandSend(user);
             ctx.status = 200;
             ctx.body = {
                 message: "Please Verify Your Account. An Email has been Sent."
             };
         }
-        else {
-            ctx.status = 400;
-            ctx.body = "Wrong Password";
-        }
+
 
     }
 
@@ -326,8 +330,8 @@ export default class UserController {
             subject: "Verify Your Account✔.",
             text: "Please verify",
             html: `<b>Click Here to verify </b>
-            <button onclick="location.href='${config.serverURL}/accountverify/${token}'" type="button">
-            Verify Account</button>`,
+            <a href='${config.serverURL}/accountverify/${token}' >
+            Verify Account</a>`,
         };
         await SendEmail(payload);
         console.log(`${config.serverURL}/accountverify/${token}`);
