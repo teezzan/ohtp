@@ -1,10 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, ManyToOne, JoinColumn } from "typeorm";
-import {  IsDate, Length, IsNumber } from "class-validator";
+import { IsDate, Length, IsNumber } from "class-validator";
 import { Project } from "./project";
 
 
 @Entity()
-export class Subscription extends BaseEntity{ 
+export class Subscription extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -16,14 +16,13 @@ export class Subscription extends BaseEntity{
     @IsNumber()
     total: number
 
-    @Column()
+    @Column({ default: 0 })
     @IsNumber()
     current: number
 
     @Column({ type: "timestamptz" })
     @IsDate()
     expiry: Date;
-
 
     @ManyToOne(() => Project)
     @JoinColumn()

@@ -7,12 +7,12 @@ import winston from "winston";
 import { createConnection, ConnectionOptions } from "typeorm";
 import "reflect-metadata";
 
+import { SwaggerRouter } from "koa-swagger-decorator";
 import { logger } from "./utils/logger";
 import { config } from "./utils/config";
-import { unprotectedRouter } from "./routes/unprotectedRoutes";
 import { userRoute } from "./routes/userRoute";
 import { cron } from "./utils/cron";
-import { SwaggerRouter } from "koa-swagger-decorator";
+import { projectRoute } from "./routes/projectRoutes";
 
 const connectionOptions: ConnectionOptions = {
     type: "postgres",
@@ -88,6 +88,7 @@ createConnection(connectionOptions).then(async () => {
 
     // These routes are protected by the JWT middleware, also include middleware to respond with "Method Not Allowed - 405".
     app.use(userRoute.routes()).use(userRoute.allowedMethods());
+    app.use(projectRoute.routes()).use(projectRoute.allowedMethods());
 
     // Register cron job to do any action needed
     cron.start();

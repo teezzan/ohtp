@@ -1,10 +1,12 @@
 import Router from "@koa/router";
+import jwt from "koa-jwt";
 import { project } from "../controller";
 
-const projectRouter = new Router({
+const projectRoute = new Router({
     prefix: "/projects"
 });
+projectRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 
-projectRouter.post("/create", project.createProject);
+projectRoute.post("/create", project.createProject);
 
-export { projectRouter };
+export { projectRoute };
