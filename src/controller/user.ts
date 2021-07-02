@@ -10,6 +10,7 @@ import {
 import { publify } from "../utils/publify";
 import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
 import { config } from "../utils/config";
+import { SendEmail } from "../mediums/email";
 
 const public_field = ["id", "name", "email", "isVerified", "token"];
 
@@ -41,7 +42,7 @@ export default class UserController {
         } else {
             userToBeSaved.password = bcrypt.hashSync(ctx.request.body.password, 8);
             const user = await User.save(userToBeSaved);
-            this.generateVerifyandSend(user.id);
+            this.generateVerifyandSend(user);
             ctx.status = 201;
             ctx.body = await publify(user, public_field);
 
@@ -80,7 +81,7 @@ export default class UserController {
             ctx.body = await publify({ ...user, token }, public_field);
         }
         else if (user.isVerified == false) {
-            await this.generateVerifyandSend(user.id);
+            await this.generateVerifyandSend(user);
             ctx.status = 200;
             ctx.body = {
                 message: "Please Verify Your Account. An Email has been Sent."
@@ -311,14 +312,24 @@ export default class UserController {
 
     }
 
-    private static generateVerifyandSend = async (id: number): Promise<void> => {
+    private static generateVerifyandSend = async (user: User): Promise<void> => {
         const otp = GenerateOTP();
         const token = await EncryptPayload({
             otp,
-            id
+            id: user.id
         });
-        await User.update({ id }, { otp });
+        await User.update({ id: user.id }, { otp });
         //send email
+        const payload = {
+            from: "\"OhTP 👻\" <foo@ohtp.com>",
+            to: user.email,
+            subject: "Verify Your Account✔.",
+            text: "Please verify",
+            html: `<b>Click Here to verify </b>
+            <button onclick="location.href='${config.serverURL}/accountverify/${token}'" type="button">
+            Verify Account</button>`,
+        };
+        await SendEmail(payload);
         console.log(`${config.serverURL}/accountverify/${token}`);
     }
 }

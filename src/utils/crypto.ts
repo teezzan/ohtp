@@ -12,7 +12,6 @@ export const EncryptPayload = async (payload: any): Promise<string> => {
         .setIssuedAt()
         .setExpirationTime("2h")
         .encrypt(secretKey);
-
     return token;
 
 };
