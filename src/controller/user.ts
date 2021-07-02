@@ -6,7 +6,7 @@ import { request, summary, body, responsesAll, tagsAll, security } from "koa-swa
 import { User, userSchema } from "../entity/user";
 import {
     editSchema, EditUser, ForgetPassword, forgetpasswordSchema, Login, loginSchema, Token, tokenSchema, passwordTokenSchema, PasswordAndToken
-} from "../interfaces/utils";
+} from "../interfaces/user";
 import { publify } from "../utils/publify";
 import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
 import { config } from "../utils/config";

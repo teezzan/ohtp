@@ -5,7 +5,7 @@ import { Subscription } from "./subscription";
 import { User } from "./user";
 
 @Entity()
-export class Project extends BaseEntity{
+export class Project extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -19,13 +19,14 @@ export class Project extends BaseEntity{
     otps: Otp[];
 
     @Column({
-        length: 80
+        length: 80, nullable: true, default: null
     })
     @Length(10, 80)
     private_key: string;
 
     @Column({
-        length: 80
+        length: 80,
+        nullable: true, default: null
     })
     @Length(10, 80)
     public_key: string;
