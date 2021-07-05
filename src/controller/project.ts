@@ -1,9 +1,10 @@
 import { Context } from "koa";
 import { validate, ValidationError } from "class-validator";
-import { request, summary, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
+import { request, summary, body, responsesAll, tagsAll, security, path } from "koa-swagger-decorator";
 import { createProjectSchema } from "../interfaces/project";
 import { Project } from "../entity/project";
 import { Subscription } from "../entity/subscription";
+import { getManager } from "typeorm";
 import { User } from "../entity/user";
 import { publify } from "../utils/publify";
 import { config } from "../utils/config";
@@ -54,12 +55,25 @@ export default class ProjectController {
         }
     }
 
-    @request("get", "/projects/")
+    @request("get", "/projects/{rowsPerPage}/{page}")
     @summary("Get all Project")
+    @path({
+        rowsPerPage: { type: "number", required: true, description: "Number of Project Per page" },
+        page: { type: "number", required: true, description: "Page Number" },
+    })
     @security([{ Bearer: [] }])
     public static async listProjects(ctx: Context): Promise<void> {
 
-        const projects = await Project.find({ user: ctx.state.user.id });
+        // const projects = await Project.find({ user: ctx.state.user.id });
+        //test querybuilder
+        const projects = await getManager()
+            .createQueryBuilder(Project, "project")
+            .where("project.user = :id", { id: ctx.state.user.id })
+            .skip(ctx.params.rowsPerPage * (ctx.params.page - 1))
+            .take(ctx.params.page)
+            .getMany();
+
+        console.log(projects);
 
         ctx.status = 200;
         ctx.body = projects;
