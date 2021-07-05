@@ -63,17 +63,16 @@ export default class ProjectController {
     })
     @security([{ Bearer: [] }])
     public static async listProjects(ctx: Context): Promise<void> {
+        let page = parseInt(ctx.params.page);
+        let rowsPerPage = parseInt(ctx.params.rowsPerPage);
+        let skip_number = rowsPerPage * (page - 1);
 
-        // const projects = await Project.find({ user: ctx.state.user.id });
-        //test querybuilder
         const projects = await getManager()
             .createQueryBuilder(Project, "project")
             .where("project.user = :id", { id: ctx.state.user.id })
-            .skip(ctx.params.rowsPerPage * (ctx.params.page - 1))
-            .take(ctx.params.page)
+            .skip(skip_number || 0)
+            .take(rowsPerPage || 5)
             .getMany();
-
-        console.log(projects);
 
         ctx.status = 200;
         ctx.body = projects;
