@@ -11,6 +11,7 @@ import { publify } from "../utils/publify";
 import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
 import { config } from "../utils/config";
 import { SendEmail } from "../mediums/email";
+import { getManager } from "typeorm";
 
 const public_field = ["id", "name", "email", "isVerified", "token"];
 
@@ -67,7 +68,12 @@ export default class UserController {
             ctx.body = errors;
             return;
         }
-        const user = await User.findOne({ email: loginData.email });
+
+        const user = await getManager()
+            .createQueryBuilder(User, "user")
+            .addSelect("user.password")
+            .where("user.email = :email", { email: loginData.email})
+            .getOne();
 
         console.log((await bcrypt.compare(loginData.password, user.password)));
         if (!user) {

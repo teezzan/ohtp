@@ -18,12 +18,12 @@ export class Project extends BaseEntity {
     @OneToMany(type => Otp, otp => otp.project)
     otps: Otp[];
 
-    @Column({ length: 80, nullable: true, default: null })
+    @Column({ length: 80, nullable: true, default: null, select: false })
     @Length(1, 80)
     @IsOptional()
     private_key: string;
 
-    @Column({ length: 80, nullable: true, default: null })
+    @Column({ length: 80, nullable: true, default: null, select: false })
     @IsOptional()
     @Length(1, 80)
     public_key: string;
@@ -32,11 +32,11 @@ export class Project extends BaseEntity {
     @IsOptional()
     @JoinColumn()
     subscription: Subscription;
-    
+
     @ManyToOne(() => User)
     @JoinColumn()
     user: User
-    
+
     // @Column()
     // @IsOptional()
     // subscription: number;
