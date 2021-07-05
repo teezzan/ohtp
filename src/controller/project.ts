@@ -53,4 +53,17 @@ export default class ProjectController {
             ctx.body = "The specified project name exists";
         }
     }
+
+    @request("get", "/projects/")
+    @summary("Get all Project")
+    @security([{ Bearer: [] }])
+    @body(createProjectSchema)
+    public static async listProjects(ctx: Context): Promise<void> {
+
+        const projects = await Project.findOne({ user: ctx.state.user.id });
+
+        ctx.status = 200;
+        ctx.body = projects;
+
+    }
 }

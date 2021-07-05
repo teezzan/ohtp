@@ -7,6 +7,7 @@ const projectRoute = new Router({
 });
 projectRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 
+projectRoute.get("/", project.listProjects);
 projectRoute.post("/create", project.createProject);
 
 export { projectRoute };

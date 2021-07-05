@@ -37,9 +37,9 @@ export class Project extends BaseEntity {
     @JoinColumn()
     user: User
     
-    @Column()
-    @IsOptional()
-    userId: number;
+    // @Column()
+    // @IsOptional()
+    // userId: number;
 }
 
 export const projectSchema = {
