@@ -57,10 +57,9 @@ export default class ProjectController {
     @request("get", "/projects/")
     @summary("Get all Project")
     @security([{ Bearer: [] }])
-    @body(createProjectSchema)
     public static async listProjects(ctx: Context): Promise<void> {
 
-        const projects = await Project.findOne({ user: ctx.state.user.id });
+        const projects = await Project.find({ user: ctx.state.user.id });
 
         ctx.status = 200;
         ctx.body = projects;
