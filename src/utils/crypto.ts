@@ -24,3 +24,7 @@ export const DecryptPayload = async (token: string): Promise<any> => {
 export const GenerateOTP = (): string => {
     return notp.totp.gen(secretKey, {});
 };
+
+export const GenerateKey = (byte=8): string =>{
+    return crypto.randomBytes(byte).toString('hex');
+}
