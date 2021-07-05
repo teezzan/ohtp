@@ -44,7 +44,9 @@ export default class ProjectController {
                 project: new_project,
                 expiry: date,
             });
-            new_project.subscription = subscription;
+            let new_sub = await Subscription.save(subscription);
+            
+            new_project.subscription = new_sub;
             new_project = await Project.save(new_project);
             ctx.status = 201;
             ctx.body = new_project;
@@ -82,6 +84,9 @@ export default class ProjectController {
 
         const projects = await getManager()
             .createQueryBuilder(Project, "project")
+            // .select(['subscription', 'name'])
+            // .leftJoinAndSelect("project.subscription", "subscription", "subscription.total = :total", { total: 200 })
+            .leftJoinAndSelect("project.subscription", "subscription")
             .where("project.user = :id", { id: ctx.state.user.id })
             .skip(skip_number || 0)
             .take(rowsPerPage || 5)

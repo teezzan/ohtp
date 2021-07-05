@@ -39,7 +39,7 @@ export class Project extends BaseEntity {
     
     // @Column()
     // @IsOptional()
-    // userId: number;
+    // subscription: number;
 }
 
 export const projectSchema = {
