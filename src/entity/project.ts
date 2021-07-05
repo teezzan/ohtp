@@ -32,10 +32,14 @@ export class Project extends BaseEntity {
     @IsOptional()
     @JoinColumn()
     subscription: Subscription;
-
+    
     @ManyToOne(() => User)
     @JoinColumn()
     user: User
+    
+    @Column()
+    @IsOptional()
+    userId: number;
 }
 
 export const projectSchema = {
