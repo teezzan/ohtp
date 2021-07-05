@@ -11,7 +11,7 @@ import { config } from "../utils/config";
 
 const public_field = ["id", "name", "subscription"];
 
-@responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" } })
+@responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442:{description:"Unprocessable Entity"} })
 @tagsAll(["Project"])
 export default class ProjectController {
 
@@ -63,9 +63,22 @@ export default class ProjectController {
     })
     @security([{ Bearer: [] }])
     public static async listProjects(ctx: Context): Promise<void> {
+
+
         let page = parseInt(ctx.params.page);
         let rowsPerPage = parseInt(ctx.params.rowsPerPage);
         let skip_number = rowsPerPage * (page - 1);
+        if (page <= 0) {
+            ctx.status = 442;
+            ctx.body = "page should be greater than 0"; 
+            return
+        }
+        if (rowsPerPage <= 0) {
+            ctx.status = 442;
+            ctx.body = "rowsPerPage should be greater than 0"; 
+            return
+        }
+
 
         const projects = await getManager()
             .createQueryBuilder(Project, "project")
