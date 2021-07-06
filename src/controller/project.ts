@@ -10,7 +10,7 @@ import { publify } from "../utils/publify";
 import { config } from "../utils/config";
 import { update } from "lodash";
 
-const public_field = ["id", "name", "subscription"];
+const public_field = ["id", "name", "subscription",];
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442: { description: "Unprocessable Entity" } })
 @tagsAll(["Project"])
@@ -121,8 +121,8 @@ export default class ProjectController {
 
     }
 
-    @request("get", "/projects/keys/{projectID}")
-    @summary("Get Project's key")
+    @request("get", "/projects/settings/{projectID}")
+    @summary("Get Project's  Settings key")
     @security([{ Bearer: [] }])
     @path({
         projectID: { type: "string", required: true, description: "Project ID" }
@@ -131,7 +131,7 @@ export default class ProjectController {
 
         const project = await getManager()
             .createQueryBuilder(Project, "project")
-            .addSelect(["project.secret_key", "project.public_key"])
+            .addSelect(["project.secret_key", "project.public_key", "project.webhook_url", "project.callback_url"])
             .where("project.user = :userId", { userId: ctx.state.user.id })
             .where("project.id = :id", { id: ctx.params.projectID })
             .getOne();
@@ -165,6 +165,9 @@ export default class ProjectController {
     @summary("Edit a Project Details")
     @body(editProjectSchema)
     @security([{ Bearer: [] }])
+    @path({
+        projectID: { type: "string", required: true, description: "Project ID" }
+    })
     public static async editProject(ctx: Context): Promise<void> {
         const editData: EditProject = {
             name: ctx.request.body.name,
@@ -199,16 +202,21 @@ export default class ProjectController {
             projectToBeSaved.callback_url = editData.callback_url;
         }
 
-        const project = await getManager()
-            .createQueryBuilder(Project, "project")
-            .update()
-            .set(projectToBeSaved)
-            .where("id = :id", { id: ctx.params.projectID })
-            .where("project.user = :userId", { userId: ctx.state.user.id })
-            .execute();
+        // const project = await getManager()
+        //     .createQueryBuilder(Project, "project")
+        //     .update()
+        //     .set(projectToBeSaved)
+        //     .where("id = :id", { id: ctx.params.projectID })
+        //     .where("project.user = :userId", { userId: ctx.state.user.id })
+        //     .execute();
+
+        const updated = await Project.save({
+            id: ctx.params.projectID, 
+            user: ctx.state.user.id,
+            ...projectToBeSaved
+        });
         ctx.status = 201;
-        ctx.body = project;
-        // ctx.body = await publify(project, public_field);
+        ctx.body = await Project.findOne({id: ctx.params.projectID, user: ctx.state.user.id,});
 
     }
 }
