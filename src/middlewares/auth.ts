@@ -25,12 +25,10 @@ export const AuthorizeWithSecretKey = async (ctx: Context, next: Next) => {
             return;
         }
         if (data != null) {
-            console.log('we Found it in Redis 🟢 ', data);
             ctx.state.cached_data = JSON.parse(data);
             await next();
 
         } else {
-            console.log('Not Found 🔴 ');
             ctx.state.cached_data = null;
             let newdata = await project.getProjectBySecretKey(secret_key);
             if (newdata == null) {
