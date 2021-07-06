@@ -6,9 +6,6 @@ import { Project } from "../entity/project";
 import { Subscription } from "../entity/subscription";
 import { getManager } from "typeorm";
 import { GenerateKey } from "../utils/crypto";
-import { publify } from "../utils/publify";
-import { config } from "../utils/config";
-import { update } from "lodash";
 
 const public_field = ["id", "name", "subscription",];
 
@@ -202,15 +199,7 @@ export default class ProjectController {
             projectToBeSaved.callback_url = editData.callback_url;
         }
 
-        // const project = await getManager()
-        //     .createQueryBuilder(Project, "project")
-        //     .update()
-        //     .set(projectToBeSaved)
-        //     .where("id = :id", { id: ctx.params.projectID })
-        //     .where("project.user = :userId", { userId: ctx.state.user.id })
-        //     .execute();
-
-        const updated = await Project.save({
+        await Project.save({
             id: ctx.params.projectID, 
             user: ctx.state.user.id,
             ...projectToBeSaved
@@ -219,4 +208,6 @@ export default class ProjectController {
         ctx.body = await Project.findOne({id: ctx.params.projectID, user: ctx.state.user.id,});
 
     }
+
+    
 }

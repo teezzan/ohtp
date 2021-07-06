@@ -18,7 +18,7 @@ export class Otp extends BaseEntity{
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ length: 200 })
+    @Column({ length: 200, nullable: true })
     @Length(4, 200)
     value: string;
 
