@@ -98,7 +98,7 @@ export default class ProjectController {
     }
 
     @request("get", "/projects/generate_keys/{projectID}")
-    @summary("Generate Project's public key")
+    @summary("Generate Project's key")
     @security([{ Bearer: [] }])
     @path({
         projectID: { type: "string", required: true, description: "Project ID" }
@@ -117,6 +117,26 @@ export default class ProjectController {
         }
         ctx.status = 400;
         ctx.body = "Project Does Not exist";
+        return;
+
+    }
+
+    @request("get", "/projects/keys/{projectID}")
+    @summary("Get Project's key")
+    @security([{ Bearer: [] }])
+    @path({
+        projectID: { type: "string", required: true, description: "Project ID" }
+    })
+    public static async getAuthKeys(ctx: Context): Promise<void> {
+
+        const project = await getManager()
+        .createQueryBuilder(Project, "project")
+        .addSelect(["project.secret_key", "project.public_key"])
+        .where("project.user = :userId", { userId: ctx.state.user.id })
+        .where("project.id = :id", { id: ctx.params.projectID })
+        .getOne();
+        ctx.status = 200;
+        ctx.body = project;
         return;
 
     }
