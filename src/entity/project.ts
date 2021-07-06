@@ -21,7 +21,7 @@ export class Project extends BaseEntity {
     @Column({ length: 80, nullable: true, default: null, select: false })
     @Length(1, 80)
     @IsOptional()
-    private_key: string;
+    secret_key: string;
 
     @Column({ length: 80, nullable: true, default: null, select: false })
     @IsOptional()

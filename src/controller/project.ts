@@ -5,13 +5,14 @@ import { createProjectSchema } from "../interfaces/project";
 import { Project } from "../entity/project";
 import { Subscription } from "../entity/subscription";
 import { getManager } from "typeorm";
-import { User } from "../entity/user";
+import { GenerateKey } from "../utils/crypto";
 import { publify } from "../utils/publify";
 import { config } from "../utils/config";
+import { update } from "lodash";
 
 const public_field = ["id", "name", "subscription"];
 
-@responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442:{description:"Unprocessable Entity"} })
+@responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442: { description: "Unprocessable Entity" } })
 @tagsAll(["Project"])
 export default class ProjectController {
 
@@ -72,12 +73,12 @@ export default class ProjectController {
         let skip_number = rowsPerPage * (page - 1);
         if (page <= 0) {
             ctx.status = 442;
-            ctx.body = "page should be greater than 0"; 
+            ctx.body = "page should be greater than 0";
             return
         }
         if (rowsPerPage <= 0) {
             ctx.status = 442;
-            ctx.body = "rowsPerPage should be greater than 0"; 
+            ctx.body = "rowsPerPage should be greater than 0";
             return
         }
 
@@ -93,6 +94,30 @@ export default class ProjectController {
 
         ctx.status = 200;
         ctx.body = projects;
+
+    }
+
+    @request("get", "/projects/generate_keys/{projectID}")
+    @summary("Generate Project's public key")
+    @security([{ Bearer: [] }])
+    @path({
+        projectID: { type: "string", required: true, description: "Project ID" }
+    })
+    public static async genAuthKeys(ctx: Context): Promise<void> {
+        const public_key = `PTP-${GenerateKey(12)}`
+        const secret_key = `STP-${GenerateKey(12)}`
+        const updated = await Project.update({ id: ctx.params.projectID, user: ctx.state.user.id }, {
+            secret_key,
+            public_key
+        });
+        if (updated.affected == 1) {
+            ctx.status = 200;
+            ctx.body = { secret_key, public_key };
+            return;
+        }
+        ctx.status = 400;
+        ctx.body = "Project Does Not exist";
+        return;
 
     }
 }

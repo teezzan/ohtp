@@ -25,6 +25,6 @@ export const GenerateOTP = (): string => {
     return notp.totp.gen(secretKey, {});
 };
 
-export const GenerateKey = (byte=8): string =>{
+export const GenerateKey = (byte = 8): string => {
     return crypto.randomBytes(byte).toString('hex');
 }
