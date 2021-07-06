@@ -1,5 +1,4 @@
 import { Context, Next } from "koa";
-import { Project } from "../entity/project";
 import { project } from "../controller";
 import { RedisClient } from "redis";
 
