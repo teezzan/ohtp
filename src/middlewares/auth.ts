@@ -1,5 +1,6 @@
 import { Context, Next } from "koa";
 import { Project } from "../entity/project";
+import { project } from "../controller";
 import { RedisClient } from "redis";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL });
@@ -31,10 +32,17 @@ export const AuthorizeWithSecretKey = async (ctx: Context, next: Next) => {
         } else {
             console.log('Not Found 🔴 ');
             ctx.state.cached_data = null;
-            //fetch user from db and put on redis
+            let newdata = await project.getProjectBySecretKey(secret_key);
+            if (newdata == null) {
+                ctx.status = 500;
+                ctx.body = "Project does not exist";
+                return;
+            }
+            redisClient.set(secret_key, JSON.stringify(newdata));
+            ctx.state.cached_data = newdata;
+            await next();
 
         }
-        await next();
     })
 
 

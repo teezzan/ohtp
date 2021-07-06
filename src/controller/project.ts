@@ -212,7 +212,17 @@ export default class ProjectController {
 
     }
 
-    
+    public static async getProjectBySecretKey(secret_key: string): Promise<Project | null> {
+        const project = await getManager()
+            .createQueryBuilder(Project, "project")
+            .addSelect(["project.secret_key", "project.public_key", "project.webhook_url", "project.callback_url"])
+            .where("project.secret_key = :secret_key", { secret_key: secret_key })
+            .getOne();
+        return project;
+
+    }
+
+
 
 
 }
