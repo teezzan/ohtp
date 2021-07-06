@@ -7,7 +7,12 @@ const otpRoute = new Router({
 });
 otpRoute.use(jwt({ secret: process.env.JWT_SECRET }));
 
-
+/**
+ * ToDo
+ * Generate an OTP (URL and Number)
+ * Verify an OTP
+ * Query OTPs
+ */
 
 
 export { otpRoute };

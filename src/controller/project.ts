@@ -7,6 +7,9 @@ import { Subscription } from "../entity/subscription";
 import { getManager } from "typeorm";
 import { GenerateKey } from "../utils/crypto";
 
+import { RedisClient } from "redis";
+const redisClient = new RedisClient({ url: process.env.REDIS_URL })
+
 const public_field = ["id", "name", "subscription",];
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442: { description: "Unprocessable Entity" } })
@@ -200,14 +203,16 @@ export default class ProjectController {
         }
 
         await Project.save({
-            id: ctx.params.projectID, 
+            id: ctx.params.projectID,
             user: ctx.state.user.id,
             ...projectToBeSaved
         });
         ctx.status = 201;
-        ctx.body = await Project.findOne({id: ctx.params.projectID, user: ctx.state.user.id,});
+        ctx.body = await Project.findOne({ id: ctx.params.projectID, user: ctx.state.user.id, });
 
     }
 
     
+
+
 }
