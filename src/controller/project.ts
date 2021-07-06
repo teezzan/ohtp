@@ -140,4 +140,24 @@ export default class ProjectController {
         return;
 
     }
+
+    @request("delete", "/projects/{projectID}")
+    @summary("delete Project")
+    @security([{ Bearer: [] }])
+    @path({
+        projectID: { type: "string", required: true, description: "Project ID" }
+    })
+    public static async deleteProject(ctx: Context): Promise<void> {
+
+        const project = await getManager()
+        .createQueryBuilder(Project, "project")
+        .delete()
+        .where("project.user = :userId", { userId: ctx.state.user.id })
+        .where("project.id = :id", { id: ctx.params.projectID })
+        .execute();
+        ctx.status = 200;
+        ctx.body = "Success";
+        return;
+
+    }
 }
