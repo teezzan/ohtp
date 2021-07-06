@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany, OneToOne, JoinColumn, ManyToOne } from "typeorm";
-import { IsOptional, Length } from "class-validator";
+import { IsOptional, IsUrl, Length } from "class-validator";
 import { Otp } from "./otp";
 import { Subscription } from "./subscription";
 import { User } from "./user";
@@ -27,6 +27,18 @@ export class Project extends BaseEntity {
     @IsOptional()
     @Length(1, 80)
     public_key: string;
+
+    @Column({ length: 200, nullable: true, default: null, select: false })
+    @IsOptional()
+    @IsUrl()
+    @Length(1, 200)
+    webhook_url: string;
+
+    @Column({ length: 200, nullable: true, default: null, select: false })
+    @IsOptional()
+    @IsUrl()
+    @Length(1, 200)
+    callback_url: string;
 
     @OneToOne(() => Subscription)
     @IsOptional()
