@@ -4,6 +4,10 @@ import { RedisClient } from "redis";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL });
 
+redisClient.on("error", function (error) {
+    console.error(error);
+});
+
 export const AuthorizeWithSecretKey = async (ctx: Context, next: Next) => {
     //check redis for key {key: ProjectID}
     let token = ctx.request.header.authorization;
@@ -13,6 +17,25 @@ export const AuthorizeWithSecretKey = async (ctx: Context, next: Next) => {
         ctx.body = "UnAuthorized"
         return;
     }
-    // ctx.set('X-Response-Time', "k");
-    await next();
+    redisClient.get(secret_key, async (err, data) => {
+        if (err) {
+            ctx.status = 500;
+            ctx.body = err;
+            console.log(err);
+            return;
+        }
+        if (data != null) {
+            console.log('we Found it in Redis 🟢 ', data);
+            ctx.state.cached_data = data;
+
+        } else {
+            console.log('Not Found 🔴 ');
+            ctx.state.cached_data = null;
+            //fetch user from db and put on redis
+
+        }
+        await next();
+    })
+
+
 }
