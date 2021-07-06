@@ -198,7 +198,14 @@ export default class ProjectController {
         if (editData.callback_url) {
             projectToBeSaved.callback_url = editData.callback_url;
         }
-        const project = await Project.save({ id: ctx.params.projectID, ...projectToBeSaved });
+
+        const project = await getManager()
+            .createQueryBuilder(Project, "project")
+            .update()
+            .set(projectToBeSaved)
+            .where("id = :id", { id: ctx.params.projectID })
+            .where("project.user = :userId", { userId: ctx.state.user.id })
+            .execute();
         ctx.status = 201;
         ctx.body = project;
         // ctx.body = await publify(project, public_field);
