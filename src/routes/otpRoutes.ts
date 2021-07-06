@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { AuthorizeWithSecretKey } from "src/middlewares/auth";
+import { AuthorizeWithSecretKey } from "../middlewares/auth";
 import { project, general } from "../controller";
 
 const otpRoute = new Router({

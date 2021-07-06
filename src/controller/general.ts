@@ -9,7 +9,7 @@ export default class GeneralController {
     @description("A simple test message to verify the service is up and running.")
     @security([{ Bearer: [] }])
     public static async helloWorld(ctx: Context): Promise<void> {
-        ctx.body = ctx.state.user.id;
+        ctx.body = ctx.state.cached_data;
     }
 
 }

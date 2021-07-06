@@ -13,6 +13,7 @@ import { config } from "./utils/config";
 import { userRoute } from "./routes/userRoute";
 import { cron } from "./utils/cron";
 import { projectRoute } from "./routes/projectRoutes";
+import { otpRoute } from "./routes/otpRoutes";
 
 const connectionOptions: ConnectionOptions = {
     type: "postgres",
@@ -68,6 +69,8 @@ createConnection(connectionOptions).then(async () => {
     // These routes are protected by the JWT middleware, also include middleware to respond with "Method Not Allowed - 405".
     app.use(userRoute.routes()).use(userRoute.allowedMethods());
     app.use(projectRoute.routes()).use(projectRoute.allowedMethods());
+    app.use(otpRoute.routes()).use(otpRoute.allowedMethods());
+
 
     // Register cron job to do any action needed
     cron.start();
