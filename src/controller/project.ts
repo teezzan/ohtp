@@ -165,7 +165,7 @@ export default class ProjectController {
     @summary("Edit a Project Details")
     @body(editProjectSchema)
     @security([{ Bearer: [] }])
-    public static async editUser(ctx: Context): Promise<void> {
+    public static async editProject(ctx: Context): Promise<void> {
         const editData: EditProject = {
             name: ctx.request.body.name,
             webhook_url: ctx.request.body.webhook_url,
@@ -184,7 +184,7 @@ export default class ProjectController {
             const project = await Project.findOne({ name: editData.name, id: ctx.params.projectID });
             if (project) {
                 ctx.status = 400;
-                ctx.body = "The specified e-mail address already exists";
+                ctx.body = "The specified name already exists";
                 return;
             } else {
 
