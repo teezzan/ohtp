@@ -37,7 +37,7 @@ export class GenerateEmailOTP {
 
     @IsInt()
     @IsOptional()
-    num: number;
+    expiry: number;
 
     @IsString()
     @Length(0, 10)
@@ -52,5 +52,5 @@ export const generateEmailOTPSchema = {
     email: { type: "string", required: true, example: "tee@gee.mail" },
     type: { type: "string", required: true, example: "url" },
     meta: { type: "object", required: false, example: { tee: 1 } },
-    num: { type: "number", required: false, example: 8 },
+    expiry: { type: "number", required: false, example: 8 },
 };

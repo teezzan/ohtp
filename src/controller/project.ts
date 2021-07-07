@@ -1,16 +1,20 @@
 import { Context } from "koa";
 import { validate, ValidationError } from "class-validator";
-import { request, summary, body, responsesAll, tagsAll, security, path } from "koa-swagger-decorator";
-import { createProjectSchema, EditProject, editProjectSchema } from "../interfaces/project";
-import { Project } from "../entity/project";
-import { Subscription } from "../entity/subscription";
 import { getManager } from "typeorm";
-import { GenerateKey } from "../utils/crypto";
-
 import { RedisClient } from "redis";
+import { request, summary, body, responsesAll, tagsAll, security, path } from "koa-swagger-decorator";
+
+import { createProjectSchema, EditProject, editProjectSchema, GenerateEmailOTP, generateEmailOTPSchema } from "../interfaces/project";
+import { Project } from "../entity/project";
+import { Medium, Otp, Type } from "../entity/otp";
+import { Subscription } from "../entity/subscription";
+import { GenerateKey, GenerateOTP } from "../utils/crypto";
+
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 
 const public_field = ["id", "name", "subscription",];
+
+
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442: { description: "Unprocessable Entity" } })
 @tagsAll(["Project"])
@@ -187,7 +191,7 @@ export default class ProjectController {
             ctx.body = errors;
             return;
         }
-        const projectToBeSaved: any = {};
+        let projectToBeSaved: any = {};
         if (editData.name) {
             const project = await Project.findOne({ name: editData.name, id: ctx.params.projectID });
             if (project) {
@@ -227,18 +231,73 @@ export default class ProjectController {
 
     }
 
-    @request("post", "/otp/generate")
-    @summary("generate OTP")
+    @request("post", "/otp/email")
+    @summary("generate email OTP")
     @security([{ Bearer: [] }])
-    
-    public static async generateOTP(ctx: Context): Promise<void> {
+    @body(generateEmailOTPSchema)
+
+
+    public static async generateEmailOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateEmailOTP = {
+            email: ctx.request.body.email,
+            type: ctx.request.body.type,
+            expiry: ctx.request.body.expiry||2,
+            meta: ctx.request.body.meta,
+
+        }
+
+        const errors: ValidationError[] = await validate(otpData);
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        let otpToBeSaved: any = {};
+
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + otpData.expiry);
+
+        otpToBeSaved.expiry = currentDate;
+        otpToBeSaved.email = otpData.email;
+        otpToBeSaved.medium = Medium.EMAIL;
+
+        if (otpData.meta) {
+            otpToBeSaved.meta = JSON.stringify(otpData.meta);
+        }
+        else {
+            otpToBeSaved.meta = JSON.stringify({});
+        }
+
+        if (otpData.type == Type.NUMBER) {
+            //generate number otp
+            otpToBeSaved.value = String(await GenerateOTP());
+            otpToBeSaved.type = Type.NUMBER;
+            //gen out email
+        }
+        else if (otpData.type == Type.URL) {
+            //generate url
+            otpToBeSaved.value = String(GenerateKey(12));
+            otpToBeSaved.type = Type.URL;
+            //gen out email
+        }
+        else {
+            ctx.status = 400;
+            ctx.body = "Invalid OTP type!";
+            return;
+        }
+
+        //send email queue
+        //push to redis
+        //return otp
+
+
 
         ctx.status = 200;
         ctx.body = "Success";
         return;
 
     }
-    
+
 
 
 }
