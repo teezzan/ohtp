@@ -14,12 +14,14 @@ const public_field = ["id", "name", "subscription",];
 
 @responsesAll({ 200: { description: "success" }, 400: { description: "bad request" }, 401: { description: "unauthorized, missing/wrong jwt token" }, 442: { description: "Unprocessable Entity" } })
 @tagsAll(["Project"])
+
 export default class ProjectController {
 
     @request("post", "/projects/create")
     @summary("Create a Project")
     @security([{ Bearer: [] }])
     @body(createProjectSchema)
+
     public static async createProject(ctx: Context): Promise<void> {
         const projectToBeSaved: Project = Project.create({
             name: ctx.request.body.name,
@@ -103,6 +105,7 @@ export default class ProjectController {
     @path({
         projectID: { type: "string", required: true, description: "Project ID" }
     })
+
     public static async genAuthKeys(ctx: Context): Promise<void> {
         const public_key = `PTP-${GenerateKey(12)}`
         const secret_key = `STP-${GenerateKey(12)}`
@@ -147,6 +150,7 @@ export default class ProjectController {
     @path({
         projectID: { type: "string", required: true, description: "Project ID" }
     })
+
     public static async deleteProject(ctx: Context): Promise<void> {
 
         const project = await getManager()
@@ -168,6 +172,7 @@ export default class ProjectController {
     @path({
         projectID: { type: "string", required: true, description: "Project ID" }
     })
+
     public static async editProject(ctx: Context): Promise<void> {
         const editData: EditProject = {
             name: ctx.request.body.name,
@@ -222,7 +227,18 @@ export default class ProjectController {
 
     }
 
+    @request("post", "/otp/generate")
+    @summary("generate OTP")
+    @security([{ Bearer: [] }])
+    
+    public static async generateOTP(ctx: Context): Promise<void> {
 
+        ctx.status = 200;
+        ctx.body = "Success";
+        return;
+
+    }
+    
 
 
 }

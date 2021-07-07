@@ -3,9 +3,20 @@ import JsonWebToken from "jsonwebtoken";
 import { validate, ValidationError } from "class-validator";
 import bcrypt from "bcrypt";
 import { request, summary, body, responsesAll, tagsAll, security } from "koa-swagger-decorator";
+
+
 import { User, userSchema } from "../entity/user";
 import {
-    editSchema, EditUser, ForgetPassword, forgetpasswordSchema, Login, loginSchema, Token, tokenSchema, passwordTokenSchema, PasswordAndToken
+    editSchema,
+    EditUser,
+    ForgetPassword,
+    forgetpasswordSchema,
+    Login,
+    loginSchema,
+    Token,
+    tokenSchema,
+    passwordTokenSchema,
+    PasswordAndToken
 } from "../interfaces/user";
 import { publify } from "../utils/publify";
 import { EncryptPayload, GenerateOTP, DecryptPayload } from "../utils/crypto";
@@ -72,7 +83,7 @@ export default class UserController {
         const user = await getManager()
             .createQueryBuilder(User, "user")
             .addSelect("user.password")
-            .where("user.email = :email", { email: loginData.email})
+            .where("user.email = :email", { email: loginData.email })
             .getOne();
 
         console.log((await bcrypt.compare(loginData.password, user.password)));
