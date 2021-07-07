@@ -248,6 +248,8 @@ export default class ProjectController {
 
         }
 
+        const id = ctx.state.cached_data.id;
+
         const errors: ValidationError[] = await validate(otpData);
         if (errors.length > 0) {
             ctx.status = 400;
@@ -260,8 +262,10 @@ export default class ProjectController {
         currentDate.setHours(currentDate.getHours() + otpData.expiry);
 
         otpToBeSaved.expiry = currentDate;
-        otpToBeSaved.email = otpData.email;
+        otpToBeSaved.isActive = true;
+        otpToBeSaved.project = id;
         otpToBeSaved.medium = Medium.EMAIL;
+        otpToBeSaved.email = otpData.email;
 
         if (otpData.meta) {
             otpToBeSaved.meta = JSON.stringify(otpData.meta);
@@ -271,28 +275,34 @@ export default class ProjectController {
         }
 
         if (otpData.type == Type.NUMBER) {
-            //generate number otp
             otpToBeSaved.value = String(await GenerateOTP());
             otpToBeSaved.type = Type.NUMBER;
-            //gen out email
         }
         else if (otpData.type == Type.URL) {
-            //generate url
             otpToBeSaved.value = String(GenerateKey(12));
             otpToBeSaved.type = Type.URL;
-            //gen out email
         }
         else {
             ctx.status = 400;
             ctx.body = "Invalid OTP type!";
             return;
         }
-        ProjectController.generateEmailandSend(otpData.email, otpData.type, otpToBeSaved.value, ctx.state.cached_data.secret_key)
-        .then(x => {
-            console.log("Sent")
-        });
+        let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
+        savedOtp = await Otp.save(savedOtp);
 
-        //push to redis
+
+        ProjectController.generateEmailandSend(otpData.email, otpData.type, otpToBeSaved.value)
+            .then(x => {
+                console.log("Sent")
+            });
+
+        redisClient.set(`${otpToBeSaved.value}::${id}`,
+            JSON.stringify({
+                meta: otpData.meta,
+                projectId: id,
+                otpId: savedOtp.id
+
+            }));
         //return otp
 
 
@@ -303,7 +313,7 @@ export default class ProjectController {
 
     }
 
-    private static generateEmailandSend = async (email: string, type: string, token: string, secret_key: string): Promise<void> => {
+    private static generateEmailandSend = async (email: string, type: string, token: string): Promise<void> => {
         let html = "";
         if (type == Type.URL) {
 
