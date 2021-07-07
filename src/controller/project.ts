@@ -8,7 +8,7 @@ import { createProjectSchema, EditProject, editProjectSchema, GenerateEmailOTP, 
 import { Project } from "../entity/project";
 import { Medium, Otp, Type } from "../entity/otp";
 import { Subscription } from "../entity/subscription";
-import { GenerateKey, GenerateOTP } from "../utils/crypto";
+import { EncryptPayload, EncryptPayloadForOTP, GenerateKey, GenerateOTP } from "../utils/crypto";
 import { SendEmail } from "../mediums/email";
 import { config } from "../utils/config";
 
@@ -281,17 +281,31 @@ export default class ProjectController {
         else if (otpData.type == Type.URL) {
             otpToBeSaved.value = String(GenerateKey(12));
             otpToBeSaved.type = Type.URL;
+
         }
         else {
             ctx.status = 400;
             ctx.body = "Invalid OTP type!";
             return;
         }
+
         let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
         savedOtp = await Otp.save(savedOtp);
 
 
-        ProjectController.generateEmailandSend(otpData.email, otpData.type, otpToBeSaved.value)
+        let token;
+        if (otpData.type == Type.URL) {
+            token = await EncryptPayloadForOTP({
+                projectId: id,
+                otpId: savedOtp.id,
+                value: otpToBeSaved.value
+            });
+        }
+        else {
+            token = otpToBeSaved.value;
+        }
+
+        ProjectController.generateEmailandSend(otpData.email, otpData.type, token)
             .then(x => {
                 console.log("Sent")
             });
@@ -302,14 +316,20 @@ export default class ProjectController {
                 projectId: id,
                 otpId: savedOtp.id
 
-            }));
+            }), (err, reply) => {
+                ctx.status = 200;
+                ctx.body = {
+                    otp: otpToBeSaved.value,
+                    id: savedOtp.id,
+                    
+                };
+                return;
+            });
         //return otp
 
 
 
-        ctx.status = 200;
-        ctx.body = "Success";
-        return;
+
 
     }
 

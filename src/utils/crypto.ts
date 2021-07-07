@@ -16,6 +16,15 @@ export const EncryptPayload = async (payload: any): Promise<string> => {
 
 };
 
+export const EncryptPayloadForOTP = async (payload: any): Promise<string> => {
+    const token = await new EncryptJWT(payload)
+        .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
+        .setIssuedAt()
+        .encrypt(secretKey);
+    return token;
+
+};
+
 export const DecryptPayload = async (token: string): Promise<any> => {
     const { payload } = await jwtDecrypt(token, secretKey);
     return payload;
