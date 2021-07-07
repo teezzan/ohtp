@@ -7,7 +7,7 @@ const otpRoute = new Router({
 });
 
 otpRoute.use(AuthorizeWithSecretKey)
-otpRoute.get("/test", general.helloWorld);
+otpRoute.get("/email", project.generateEmailOTP);
 
 
 /**

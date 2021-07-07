@@ -321,16 +321,10 @@ export default class ProjectController {
                 ctx.body = {
                     otp: otpToBeSaved.value,
                     id: savedOtp.id,
-                    
+
                 };
                 return;
             });
-        //return otp
-
-
-
-
-
     }
 
     private static generateEmailandSend = async (email: string, type: string, token: string): Promise<void> => {
