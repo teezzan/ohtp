@@ -9,6 +9,8 @@ import { Project } from "../entity/project";
 import { Medium, Otp, Type } from "../entity/otp";
 import { Subscription } from "../entity/subscription";
 import { GenerateKey, GenerateOTP } from "../utils/crypto";
+import { SendEmail } from "../mediums/email";
+import { config } from "../utils/config";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 
@@ -241,7 +243,7 @@ export default class ProjectController {
         const otpData: GenerateEmailOTP = {
             email: ctx.request.body.email,
             type: ctx.request.body.type,
-            expiry: ctx.request.body.expiry||2,
+            expiry: ctx.request.body.expiry || 2,
             meta: ctx.request.body.meta,
 
         }
@@ -285,8 +287,11 @@ export default class ProjectController {
             ctx.body = "Invalid OTP type!";
             return;
         }
+        ProjectController.generateEmailandSend(otpData.email, otpData.type, otpToBeSaved.value, ctx.state.cached_data.secret_key)
+        .then(x => {
+            console.log("Sent")
+        });
 
-        //send email queue
         //push to redis
         //return otp
 
@@ -296,6 +301,27 @@ export default class ProjectController {
         ctx.body = "Success";
         return;
 
+    }
+
+    private static generateEmailandSend = async (email: string, type: string, token: string, secret_key: string): Promise<void> => {
+        let html = "";
+        if (type == Type.URL) {
+
+            html = `<b>Click Here to verify </b>
+            <a href='${config.serverURL}/otp/${token}' >
+            Verify Account</a>`
+        } else {
+            html = `<b>Your OTP is ${token}</b> Go to the website to confirm it`
+
+        }
+        const payload = {
+            from: "\"OhTP 👻\" <foo@ohtp.com>",
+            to: email,
+            subject: "Authentication✔.",
+            text: "Please Auth",
+            html,
+        };
+        await SendEmail(payload);
     }
 
 
