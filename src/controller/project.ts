@@ -8,13 +8,15 @@ import { createProjectSchema, EditProject, editProjectSchema, GenerateEmailOTP, 
 import { Project } from "../entity/project";
 import { Medium, Otp, Type } from "../entity/otp";
 import { Subscription } from "../entity/subscription";
-import { EncryptPayload, EncryptPayloadForOTP, GenerateKey, GenerateOTP } from "../utils/crypto";
+import { DecryptPayload, EncryptPayload, EncryptPayloadForOTP, GenerateKey, GenerateOTP } from "../utils/crypto";
 import { SendEmail } from "../mediums/email";
 import { config } from "../utils/config";
 import { promisify } from "util";
+import { Token, tokenSchema } from "../interfaces/user";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 const setAsync = promisify(redisClient.set).bind(redisClient);
+const getAsync = promisify(redisClient.get).bind(redisClient);
 
 const public_field = ["id", "name", "subscription",];
 
@@ -330,6 +332,32 @@ export default class ProjectController {
             id: savedOtp.id
         };
     }
+
+    @request("post", "/otp/verify/{token}")
+    @summary("Verify otp")
+    @path({
+        token: { type: "string", required: true, description: "Project ID" }
+    })
+    public static async verifyAccount(ctx: Context): Promise<void> {
+        const tokenData: Token = {
+            token: ctx.params.token
+        };
+
+        const errors: ValidationError[] = await validate(tokenData);
+
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        const status = await DecryptPayload(tokenData.token);
+        //get from redis
+        let data = await getAsync(`${status.value}::${status.projectId}`);
+        ctx.body = data;
+       
+
+    }
+
 
     private static generateEmailandSend = async (email: string, type: string, token: string): Promise<void> => {
         let html = "";

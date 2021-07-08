@@ -6,10 +6,10 @@ const otpRoute = new Router({
     prefix: "/otp"
 });
 
+otpRoute.post("/verify/:token", project.verifyAccount);
+
 otpRoute.use(AuthorizeWithSecretKey)
 otpRoute.post("/email", project.generateEmailOTP);
-otpRoute.get("/cry", general.helloWorld);
-
 
 /**
  * ToDo
