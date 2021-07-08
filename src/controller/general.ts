@@ -4,7 +4,7 @@ import { description, request, security, summary, tagsAll } from "koa-swagger-de
 @tagsAll(["General"])
 export default class GeneralController {
 
-    @request("get", "/otp/test")
+    @request("get", "/te")
     @summary("Welcome page")
     @description("A simple test message to verify the service is up and running.")
     @security([{ Bearer: [] }])

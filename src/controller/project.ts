@@ -11,8 +11,10 @@ import { Subscription } from "../entity/subscription";
 import { EncryptPayload, EncryptPayloadForOTP, GenerateKey, GenerateOTP } from "../utils/crypto";
 import { SendEmail } from "../mediums/email";
 import { config } from "../utils/config";
+import { promisify } from "util";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
+const setAsync = promisify(redisClient.set).bind(redisClient);
 
 const public_field = ["id", "name", "subscription",];
 
@@ -310,21 +312,23 @@ export default class ProjectController {
                 console.log("Sent")
             });
 
-        redisClient.set(`${otpToBeSaved.value}::${id}`,
+        setAsync(`${otpToBeSaved.value}::${id}`,
             JSON.stringify({
                 meta: otpData.meta,
                 projectId: id,
                 otpId: savedOtp.id
 
-            }), (err, reply) => {
-                ctx.status = 200;
-                ctx.body = {
-                    otp: otpToBeSaved.value,
-                    id: savedOtp.id,
+            })).then((x: any) => {
+                console.log("Added");
+            }).catch((err: any) => {
+                console.log(err);
+            })
 
-                };
-                return;
-            });
+        ctx.status = 200;
+        ctx.body = {
+            otp: otpToBeSaved.value,
+            id: savedOtp.id
+        };
     }
 
     private static generateEmailandSend = async (email: string, type: string, token: string): Promise<void> => {
