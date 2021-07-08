@@ -302,7 +302,8 @@ export default class ProjectController {
             token = await EncryptPayloadForOTP({
                 projectId: id,
                 otpId: savedOtp.id,
-                value: otpToBeSaved.value
+                value: otpToBeSaved.value,
+
             });
         }
         else {
@@ -318,7 +319,12 @@ export default class ProjectController {
             JSON.stringify({
                 meta: otpData.meta,
                 projectId: id,
-                otpId: savedOtp.id
+                otpId: savedOtp.id,
+                expiry: otpToBeSaved.expiry,
+                callback_url: ctx.state.cached_data.callback_url,
+                webhook_url: ctx.state.cached_data.webhook_url,
+                secret_key: ctx.state.cached_data.secret_key,
+                private_key: ctx.state.cached_data.private_key
 
             })).then((x: any) => {
                 console.log("Added");
@@ -353,8 +359,19 @@ export default class ProjectController {
         const status = await DecryptPayload(tokenData.token);
         //get from redis
         let data = await getAsync(`${status.value}::${status.projectId}`);
-        ctx.body = data;
-       
+        if (data.expiry > new Date()) {
+            ctx.status = 400;
+            ctx.body = "Expired Token!";
+            return;
+        }
+        //change to inactive and send webhook. Will optimize later
+        Otp.update({ id: data.otpId, value: data.value }, { isActive: false }).then((x: any) => {
+            console.log("Updated");
+        }).catch((err: any) => {
+            console.log(err);
+        })
+
+        //send webhook and redirect
 
     }
 
