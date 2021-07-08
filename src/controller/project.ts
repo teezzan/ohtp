@@ -12,7 +12,8 @@ import { DecryptPayload, EncryptPayload, EncryptPayloadForOTP, GenerateKey, Gene
 import { SendEmail } from "../mediums/email";
 import { config } from "../utils/config";
 import { promisify } from "util";
-import { Token, tokenSchema } from "../interfaces/user";
+import { Token } from "../interfaces/user";
+import { SendWebHook } from "../mediums/webhook";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 const setAsync = promisify(redisClient.set).bind(redisClient);
@@ -372,6 +373,26 @@ export default class ProjectController {
         })
 
         //send webhook and redirect
+        SendWebHook({
+            secret_key: data.secret_key,
+            webhook_url: data.webhook_url,
+            meta: data.meta,
+            medium: Medium.EMAIL,
+            type: Type.URL
+        }).then((x: any) => {
+            console.log("Sent or pushed to queue");
+        }).catch((err: any) => {
+            console.log(err);
+        })
+
+        if (data.callback_url !== null) {
+            ctx.redirect(data.callback_url); // redirect to another page
+            return;
+        }
+        else{
+            ctx.status=200;
+            ctx.body = "You have successfully verified the otp"
+        }
 
     }
 
