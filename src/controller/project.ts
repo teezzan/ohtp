@@ -340,10 +340,10 @@ export default class ProjectController {
         };
     }
 
-    @request("post", "/otp/verify/{token}")
+    @request("get", "/otp/verify/{token}")
     @summary("Verify otp")
     @path({
-        token: { type: "string", required: true, description: "Project ID" }
+        token: { type: "string", required: true, description: "token" }
     })
     public static async verifyAccount(ctx: Context): Promise<void> {
         const tokenData: Token = {
@@ -357,9 +357,10 @@ export default class ProjectController {
             ctx.body = errors;
             return;
         }
+
         const status = await DecryptPayload(tokenData.token);
         //get from redis
-        let data = await getAsync(`${status.value}::${status.projectId}`);
+        let data = JSON.parse(await getAsync(`${status.value}::${status.projectId}`));
         if (data.expiry > new Date()) {
             ctx.status = 400;
             ctx.body = "Expired Token!";
@@ -386,11 +387,13 @@ export default class ProjectController {
         })
 
         if (data.callback_url !== null) {
-            ctx.redirect(data.callback_url); // redirect to another page
-            return;
+            // ctx.redirect(data.callback_url); // redirect to another page
+            // return;
+            ctx.status = 200;
+            ctx.body = "You have successfully verified the otp"
         }
-        else{
-            ctx.status=200;
+        else {
+            ctx.status = 200;
             ctx.body = "You have successfully verified the otp"
         }
 
