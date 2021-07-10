@@ -422,7 +422,7 @@ export default class ProjectController {
         if (type == Type.URL) {
 
             html = `<b>Click Here to verify </b>
-            <a href='${config.serverURL}/otp/${token}' >
+            <a href='${config.serverURL}/otp/verify/${token}' >
             Verify Account</a>`
         } else {
             html = `<b>Your OTP is ${token}</b> Go to the website to confirm it`
