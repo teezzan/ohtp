@@ -325,7 +325,8 @@ export default class ProjectController {
                 callback_url: ctx.state.cached_data.callback_url,
                 webhook_url: ctx.state.cached_data.webhook_url,
                 secret_key: ctx.state.cached_data.secret_key,
-                private_key: ctx.state.cached_data.private_key
+                private_key: ctx.state.cached_data.private_key,
+                isActive: true,
 
             })).then((x: any) => {
                 console.log("Added");
@@ -366,9 +367,11 @@ export default class ProjectController {
             ctx.body = "Expired Token!";
             return;
         }
+
         //change to inactive and send webhook. Will optimize later
-        Otp.update({ id: data.otpId, value: data.value }, { isActive: false }).then((x: any) => {
-            console.log("Updated");
+        Otp.update({ id: data.otpId }, { isActive: false }).then((x: any) => {
+            console.log("Updated ", x.affected);
+            
         }).catch((err: any) => {
             console.log(err);
         })
@@ -387,10 +390,8 @@ export default class ProjectController {
         })
 
         if (data.callback_url !== null) {
-            // ctx.redirect(data.callback_url); // redirect to another page
-            // return;
-            ctx.status = 200;
-            ctx.body = "You have successfully verified the otp"
+            ctx.redirect(data.callback_url); // redirect to another page
+            return;
         }
         else {
             ctx.status = 200;
