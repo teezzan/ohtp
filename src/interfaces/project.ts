@@ -54,3 +54,12 @@ export const generateEmailOTPSchema = {
     meta: { type: "object", required: false, example: { tee: 1 } },
     expiry: { type: "number", required: false, example: 8 },
 };
+
+export interface WebHookPayload {
+
+    secret_key: string,
+    webhook_url: string,
+    meta: string,
+    medium: string,
+    type: string
+}

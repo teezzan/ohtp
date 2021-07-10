@@ -17,7 +17,7 @@ amqp.connect(CONN_URL, function (error1, conn: Connection) {
 });
 
 
-export const publishToQueue = async (queueName: string, data: Buffer) => {
+export const publishToQueue = async (queueName: string, data: string) => {
     channel.assertQueue(queueName, {
         durable: true
     });
