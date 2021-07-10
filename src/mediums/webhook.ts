@@ -16,7 +16,7 @@ export const SendWebHook = async (payload: WebHookPayload): Promise<boolean> => 
             }
         }
         //send webhook with secrete key encryption
-        if (process.env.USE_QUEUE) {
+        if (process.env.USE_QUEUEn == "true") {
 
             publishToQueue(task_queue, JSON.stringify(payload)).then(() => {
                 resolve(true);
@@ -41,7 +41,7 @@ export const SendWebHook = async (payload: WebHookPayload): Promise<boolean> => 
                             "application/json",
                     },
                 }).then((res) => {
-                    console.log(res);
+                    console.log("res", res);
                     resolve(true)
 
                 }).catch((err: any) => {

@@ -2,33 +2,45 @@ import amqp, { Channel, Connection } from 'amqplib/callback_api';
 const CONN_URL = process.env.CONN_URL
 
 let channel: Channel;
+if (process.env.USE_QUEUE == "true") {
 
-amqp.connect(CONN_URL, function (error1, conn: Connection) {
-    if (error1) {
-        throw error1;
-    }
-    console.log("Connected to queue Successfully")
-    conn.createChannel(function (err: any, ch: Channel) {
-        if (err)
-            throw err;
+    amqp.connect(CONN_URL, function (error1, conn: Connection) {
+        if (error1) {
+            throw error1;
+        }
+        console.log("Connected to queue Successfully")
+        conn.createChannel(function (err: any, ch: Channel) {
+            if (err)
+                throw err;
 
-        channel = ch;
+            channel = ch;
+        });
     });
-});
+}
 
 
 export const publishToQueue = async (queueName: string, data: string) => {
-    channel.assertQueue(queueName, {
-        durable: true
-    });
+    if (process.env.USE_QUEUE == "false")
+        return false;
+    else {
 
-    channel.sendToQueue(queueName, Buffer.from(data));
+        channel.assertQueue(queueName, {
+            durable: true
+        });
+
+        channel.sendToQueue(queueName, Buffer.from(data));
+        return true;
+    }
 }
 
 
 process.on('exit', () => {
-    channel.close(() => {
+    if (process.env.USE_QUEUE == "true" && channel != undefined) {
 
-        console.log(`Closing rabbitmq Channel`);
-    });
+        channel.close(() => {
+
+            console.log(`Closing rabbitmq Channel`);
+        });
+    }
+
 });
