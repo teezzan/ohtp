@@ -36,12 +36,12 @@ export const SendWebHook = async (payload: WebHookPayload): Promise<boolean> => 
                 dataToSend,
                 {
                     headers: {
-                        "x-paystack-signature": hash,
+                        "x-ohtp-signature": hash,
                         "Content-Type":
                             "application/json",
                     },
                 }).then((res) => {
-                    console.log("res", res);
+                    console.log("res", res.status);
                     resolve(true)
 
                 }).catch((err: any) => {
