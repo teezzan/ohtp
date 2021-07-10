@@ -367,11 +367,27 @@ export default class ProjectController {
             ctx.body = "Expired Token!";
             return;
         }
+        if (!data.isActive) {
+            ctx.status = 400;
+            ctx.body = "InActive Token!";
+            return;
+        }
 
         //change to inactive and send webhook. Will optimize later
         Otp.update({ id: data.otpId }, { isActive: false }).then((x: any) => {
             console.log("Updated ", x.affected);
-            
+
+        }).catch((err: any) => {
+            console.log(err);
+        })
+
+        data.isActive = false;
+
+        setAsync(`${status.value}::${status.projectId}`,
+            JSON.stringify(data)
+        ).then((x: any) => {
+            console.log("Set isACtive to false");
+
         }).catch((err: any) => {
             console.log(err);
         })
