@@ -367,8 +367,7 @@ export default class ProjectController {
             //missed cache. STressful!!!
             try {
 
-                let otpData = Otp.findOne({ id: status.otpId });
-
+                const otpData = Otp.findOne({ id: status.otpId });
                 const projectData = getManager()
                     .createQueryBuilder(Project, "project")
                     .addSelect(["project.secret_key", "project.public_key", "project.webhook_url", "project.callback_url"])
@@ -376,6 +375,8 @@ export default class ProjectController {
                     .getOne();
 
                 const newData = await Promise.all([otpData, projectData])
+                if (newData[0] == null || newData[1] == null)
+                    throw new Error('Either Not Found');
                 data = {
                     meta: newData[0].meta,
                     projectId: status.projectId,
