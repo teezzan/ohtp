@@ -325,7 +325,7 @@ export default class ProjectController {
                 callback_url: ctx.state.cached_data.callback_url,
                 webhook_url: ctx.state.cached_data.webhook_url,
                 secret_key: ctx.state.cached_data.secret_key,
-                private_key: ctx.state.cached_data.private_key,
+                private_key: ctx.state.cached_data.public_key,
                 isActive: true,
 
             })).then((x: any) => {
@@ -362,6 +362,40 @@ export default class ProjectController {
         const status = await DecryptPayload(tokenData.token);
         //get from redis
         let data = JSON.parse(await getAsync(`${status.value}::${status.projectId}`));
+
+        if (data == null) {
+            //missed cache. STressful!!!
+            try {
+
+                let otpData = Otp.findOne({ id: status.otpId });
+
+                const projectData = getManager()
+                    .createQueryBuilder(Project, "project")
+                    .addSelect(["project.secret_key", "project.public_key", "project.webhook_url", "project.callback_url"])
+                    .where("project.id = :id", { id: status.projectId })
+                    .getOne();
+
+                const newData = await Promise.all([otpData, projectData])
+                data = {
+                    meta: newData[0].meta,
+                    projectId: status.projectId,
+                    otpId: status.otpId,
+                    expiry: newData[0].expiry,
+                    callback_url: newData[1].callback_url,
+                    webhook_url: newData[1].webhook_url,
+                    secret_key: newData[1].secret_key,
+                    private_key: newData[1].public_key,
+                    isActive: newData[0].isActive,
+                }
+            }
+            catch (err) {
+                console.log(err);
+                ctx.status = 400;
+                ctx.body = "Not Found!";
+                return;
+            }
+
+        }
         if (data.expiry > new Date()) {
             ctx.status = 400;
             ctx.body = "Expired Token!";
