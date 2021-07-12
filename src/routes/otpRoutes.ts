@@ -6,7 +6,7 @@ const otpRoute = new Router({
     prefix: "/otp"
 });
 
-otpRoute.get("/verify/:token", project.verifyAccount);
+otpRoute.get("/verify/:token", project.verifyEmailOTP);
 
 otpRoute.use(AuthorizeWithSecretKey)
 otpRoute.post("/email", project.generateEmailOTP);

@@ -346,7 +346,7 @@ export default class ProjectController {
     @path({
         token: { type: "string", required: true, description: "token" }
     })
-    public static async verifyAccount(ctx: Context): Promise<void> {
+    public static async verifyEmailOTP(ctx: Context): Promise<void> {
         const tokenData: Token = {
             token: ctx.params.token
         };
