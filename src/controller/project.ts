@@ -341,6 +341,214 @@ export default class ProjectController {
         };
     }
 
+
+
+
+    @request("post", "/otp/whatsapp")
+    @summary("generate whatsapp OTP")
+    @security([{ Bearer: [] }])
+    @body(generateEmailOTPSchema)
+
+
+    public static async generateWhatsappOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateEmailOTP = {
+            email: ctx.request.body.email,
+            type: ctx.request.body.type,
+            expiry: ctx.request.body.expiry || 2,
+            meta: ctx.request.body.meta,
+
+        }
+
+        const id = ctx.state.cached_data.id;
+
+        const errors: ValidationError[] = await validate(otpData);
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        let otpToBeSaved: any = {};
+
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + otpData.expiry);
+
+        otpToBeSaved.expiry = currentDate;
+        otpToBeSaved.isActive = true;
+        otpToBeSaved.project = id;
+        otpToBeSaved.medium = Medium.EMAIL;
+        otpToBeSaved.email = otpData.email;
+
+        if (otpData.meta) {
+            otpToBeSaved.meta = JSON.stringify(otpData.meta);
+        }
+        else {
+            otpToBeSaved.meta = JSON.stringify({});
+        }
+
+        if (otpData.type == Type.NUMBER) {
+            otpToBeSaved.value = String(await GenerateOTP());
+            otpToBeSaved.type = Type.NUMBER;
+        }
+        else if (otpData.type == Type.URL) {
+            otpToBeSaved.value = String(GenerateKey(12));
+            otpToBeSaved.type = Type.URL;
+
+        }
+        else {
+            ctx.status = 400;
+            ctx.body = "Invalid OTP type!";
+            return;
+        }
+
+        let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
+        savedOtp = await Otp.save(savedOtp);
+
+
+        let token;
+        if (otpData.type == Type.URL) {
+            token = await EncryptPayloadForOTP({
+                projectId: id,
+                otpId: savedOtp.id,
+                value: otpToBeSaved.value,
+
+            });
+        }
+        else {
+            token = otpToBeSaved.value;
+        }
+
+        ProjectController.generateEmailandSend(otpData.email, otpData.type, token)
+            .then(x => {
+                console.log("Sent")
+            });
+
+        setAsync(`${otpToBeSaved.value}::${id}`,
+            JSON.stringify({
+                meta: otpData.meta,
+                projectId: id,
+                otpId: savedOtp.id,
+                expiry: otpToBeSaved.expiry,
+                callback_url: ctx.state.cached_data.callback_url,
+                webhook_url: ctx.state.cached_data.webhook_url,
+                secret_key: ctx.state.cached_data.secret_key,
+                private_key: ctx.state.cached_data.public_key,
+                isActive: true,
+
+            })).then((x: any) => {
+                console.log("Added");
+            }).catch((err: any) => {
+                console.log(err);
+            })
+
+        ctx.status = 200;
+        ctx.body = {
+            otp: otpToBeSaved.value,
+            id: savedOtp.id
+        };
+    }
+
+    @request("post", "/otp/sms")
+    @summary("generate sms OTP")
+    @security([{ Bearer: [] }])
+    @body(generateEmailOTPSchema)
+
+
+    public static async generateSmSOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateEmailOTP = {
+            email: ctx.request.body.email,
+            type: ctx.request.body.type,
+            expiry: ctx.request.body.expiry || 2,
+            meta: ctx.request.body.meta,
+
+        }
+
+        const id = ctx.state.cached_data.id;
+
+        const errors: ValidationError[] = await validate(otpData);
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        let otpToBeSaved: any = {};
+
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + otpData.expiry);
+
+        otpToBeSaved.expiry = currentDate;
+        otpToBeSaved.isActive = true;
+        otpToBeSaved.project = id;
+        otpToBeSaved.medium = Medium.EMAIL;
+        otpToBeSaved.email = otpData.email;
+
+        if (otpData.meta) {
+            otpToBeSaved.meta = JSON.stringify(otpData.meta);
+        }
+        else {
+            otpToBeSaved.meta = JSON.stringify({});
+        }
+
+        if (otpData.type == Type.NUMBER) {
+            otpToBeSaved.value = String(await GenerateOTP());
+            otpToBeSaved.type = Type.NUMBER;
+        }
+        else if (otpData.type == Type.URL) {
+            otpToBeSaved.value = String(GenerateKey(12));
+            otpToBeSaved.type = Type.URL;
+
+        }
+        else {
+            ctx.status = 400;
+            ctx.body = "Invalid OTP type!";
+            return;
+        }
+
+        let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
+        savedOtp = await Otp.save(savedOtp);
+
+
+        let token;
+        if (otpData.type == Type.URL) {
+            token = await EncryptPayloadForOTP({
+                projectId: id,
+                otpId: savedOtp.id,
+                value: otpToBeSaved.value,
+
+            });
+        }
+        else {
+            token = otpToBeSaved.value;
+        }
+
+        ProjectController.generateEmailandSend(otpData.email, otpData.type, token)
+            .then(x => {
+                console.log("Sent")
+            });
+
+        setAsync(`${otpToBeSaved.value}::${id}`,
+            JSON.stringify({
+                meta: otpData.meta,
+                projectId: id,
+                otpId: savedOtp.id,
+                expiry: otpToBeSaved.expiry,
+                callback_url: ctx.state.cached_data.callback_url,
+                webhook_url: ctx.state.cached_data.webhook_url,
+                secret_key: ctx.state.cached_data.secret_key,
+                private_key: ctx.state.cached_data.public_key,
+                isActive: true,
+
+            })).then((x: any) => {
+                console.log("Added");
+            }).catch((err: any) => {
+                console.log(err);
+            })
+
+        ctx.status = 200;
+        ctx.body = {
+            otp: otpToBeSaved.value,
+            id: savedOtp.id
+        };
+    }
     @request("get", "/otp/verify/{token}")
     @summary("Verify otp")
     @path({
