@@ -8,7 +8,7 @@ if (process.env.USE_QUEUE == "true") {
         if (error1) {
             throw error1;
         }
-        console.log("Connected to queue Successfully")
+        console.log("Connected to queue Successfully");
         conn.createChannel(function (err: any, ch: Channel) {
             if (err)
                 throw err;

@@ -3,7 +3,8 @@ import crypto from "crypto"
 import { WebHookPayload } from "../interfaces/project"
 import { publishToQueue } from "../utils/queues"
 
-const task_queue = "webhook_task_queue"
+const task_queue = "webhook_task_queue";
+
 export const SendWebHook = async (payload: WebHookPayload): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         let dataToSend = {
@@ -16,7 +17,7 @@ export const SendWebHook = async (payload: WebHookPayload): Promise<boolean> => 
             }
         }
         //send webhook with secrete key encryption
-        if (process.env.USE_QUEUEn == "true") {
+        if (process.env.USE_QUEUE == "true") {
 
             publishToQueue(task_queue, JSON.stringify(payload)).then(() => {
                 resolve(true);

@@ -72,6 +72,7 @@
     "@types/lodash": "^4.14.170",
     "@types/nodemailer": "^6.4.2",
     "@types/redis": "^2.8.30",
+    "@types/twilio": "^3.19.3",
     "amqplib": "^0.8.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
@@ -91,6 +92,7 @@
     "pg": "^8.5.1",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
+    "twilio": "^3.65.0",
     "typeorm": "^0.2.32",
     "winston": "^3.3.3"
   },
