@@ -429,7 +429,7 @@ export default class ProjectController {
     @body(generateSMSOTPSchema)
 
 
-   public static async generateWhatsappOTP(ctx: Context): Promise<void> {
+    public static async generateWhatsappOTP(ctx: Context): Promise<void> {
         const otpData: GenerateSMSOTP = {
             phone: ctx.request.body.phone,
             expiry: ctx.request.body.expiry || 2,
@@ -636,26 +636,26 @@ export default class ProjectController {
     }
     private static generateSMSandSend = async (phone: string, token: string): Promise<void> => {
         let body = `Your OTP is ${token}`;
-        
+
         const payload = {
             from: process.env.SOURCE_PHONE_NUMBER,
             to: phone,
             body
         };
         console.log(payload);
-        
+
         await SendSMS(payload);
     }
     private static generateWhatsAppandSend = async (phone: string, token: string): Promise<void> => {
         let body = `Your OTP is ${token}`;
-        
+
         const payload = {
-            from: process.env.SOURCE_PHONE_NUMBER,
+            from: process.env.SOURCE_WHATSAPP_PHONE_NUMBER,
             to: phone,
             body
         };
         console.log(payload);
-        
+
         await SendWhatsapp(payload);
     }
 
