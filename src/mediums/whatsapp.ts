@@ -23,16 +23,13 @@ export const SendWhatsapp = async (payload: SMSPayload): Promise<boolean> => {
             })
         }
         else {
-            //send sms here
-            // client.messages
-            //     .create(payload)
-            //     .then((message: any) => {
-            //         console.log(message.sid)
-            //         resolve(true)
-            //     }).catch((err: any) => {
-            //         console.log(err);
-            //         reject(false);
-            //     })
+            client.messages
+                .create({
+                    from: `whatsapp:${payload.from}`,
+                    body: payload.body,
+                    to: `whatsapp:${payload.to}`
+                })
+                .then(message => console.log(message.sid));
         }
     })
 }

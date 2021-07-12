@@ -13,7 +13,7 @@ import { config } from "../utils/config";
 import { promisify } from "util";
 import { Token } from "../interfaces/user";
 
-import { SendSMS, SendWebHook, SendEmail } from "../mediums";
+import { SendSMS, SendWebHook, SendEmail, SendWhatsapp } from "../mediums";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 const setAsync = promisify(redisClient.set).bind(redisClient);
@@ -426,16 +426,14 @@ export default class ProjectController {
     @request("post", "/otp/whatsapp")
     @summary("generate whatsapp OTP")
     @security([{ Bearer: [] }])
-    @body(generateEmailOTPSchema)
+    @body(generateSMSOTPSchema)
 
 
-    public static async generateWhatsappOTP(ctx: Context): Promise<void> {
-        const otpData: GenerateEmailOTP = {
-            email: ctx.request.body.email,
-            type: ctx.request.body.type,
+   public static async generateWhatsappOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateSMSOTP = {
+            phone: ctx.request.body.phone,
             expiry: ctx.request.body.expiry || 2,
             meta: ctx.request.body.meta,
-
         }
 
         const id = ctx.state.cached_data.id;
@@ -454,8 +452,10 @@ export default class ProjectController {
         otpToBeSaved.expiry = currentDate;
         otpToBeSaved.isActive = true;
         otpToBeSaved.project = id;
-        otpToBeSaved.medium = Medium.EMAIL;
-        otpToBeSaved.email = otpData.email;
+        otpToBeSaved.medium = Medium.WHATSAPP;
+        otpToBeSaved.recipientPhone = otpData.phone;
+        otpToBeSaved.type = Type.NUMBER;
+        otpToBeSaved.value = String(await GenerateOTP());
 
         if (otpData.meta) {
             otpToBeSaved.meta = JSON.stringify(otpData.meta);
@@ -464,39 +464,14 @@ export default class ProjectController {
             otpToBeSaved.meta = JSON.stringify({});
         }
 
-        if (otpData.type == Type.NUMBER) {
-            otpToBeSaved.value = String(await GenerateOTP());
-            otpToBeSaved.type = Type.NUMBER;
-        }
-        else if (otpData.type == Type.URL) {
-            otpToBeSaved.value = String(GenerateKey(12));
-            otpToBeSaved.type = Type.URL;
-
-        }
-        else {
-            ctx.status = 400;
-            ctx.body = "Invalid OTP type!";
-            return;
-        }
 
         let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
         savedOtp = await Otp.save(savedOtp);
 
 
-        let token;
-        if (otpData.type == Type.URL) {
-            token = await EncryptPayloadForOTP({
-                projectId: id,
-                otpId: savedOtp.id,
-                value: otpToBeSaved.value,
+        let token = otpToBeSaved.value;
 
-            });
-        }
-        else {
-            token = otpToBeSaved.value;
-        }
-
-        ProjectController.generateEmailandSend(otpData.email, otpData.type, token)
+        ProjectController.generateWhatsAppandSend(otpData.phone, token)
             .then(x => {
                 console.log("Sent")
             });
@@ -671,7 +646,18 @@ export default class ProjectController {
         
         await SendSMS(payload);
     }
-
+    private static generateWhatsAppandSend = async (phone: string, token: string): Promise<void> => {
+        let body = `Your OTP is ${token}`;
+        
+        const payload = {
+            from: process.env.SOURCE_PHONE_NUMBER,
+            to: phone,
+            body
+        };
+        console.log(payload);
+        
+        await SendWhatsapp(payload);
+    }
 
 
 }
