@@ -342,6 +342,87 @@ export default class ProjectController {
     }
 
 
+    @request("post", "/otp/sms")
+    @summary("generate sms OTP")
+    @security([{ Bearer: [] }])
+    @body(generateSMSOTPSchema)
+
+
+    public static async generateSMSOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateSMSOTP = {
+            phone: ctx.request.body.phone,
+            expiry: ctx.request.body.expiry || 2,
+            meta: ctx.request.body.meta,
+
+        }
+
+        const id = ctx.state.cached_data.id;
+
+        const errors: ValidationError[] = await validate(otpData);
+        if (errors.length > 0) {
+            ctx.status = 400;
+            ctx.body = errors;
+            return;
+        }
+        let otpToBeSaved: any = {};
+
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + otpData.expiry);
+
+        otpToBeSaved.expiry = currentDate;
+        otpToBeSaved.isActive = true;
+        otpToBeSaved.project = id;
+        otpToBeSaved.medium = Medium.SMS;
+        otpToBeSaved.recipientPhone = otpData.phone;
+        otpToBeSaved.type = Type.NUMBER;
+        otpToBeSaved.value = String(await GenerateOTP());
+
+        if (otpData.meta) {
+            otpToBeSaved.meta = JSON.stringify(otpData.meta);
+        }
+        else {
+            otpToBeSaved.meta = JSON.stringify({});
+        }
+
+
+        let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
+        savedOtp = await Otp.save(savedOtp);
+
+
+        let token = otpToBeSaved.value;
+
+        ProjectController.generateSMSandSend(otpData.phone, token)
+            .then(x => {
+                console.log("Sent")
+            });
+
+        setAsync(`${otpToBeSaved.value}::${id}`,
+            JSON.stringify({
+                meta: otpData.meta,
+                projectId: id,
+                otpId: savedOtp.id,
+                expiry: otpToBeSaved.expiry,
+                callback_url: ctx.state.cached_data.callback_url,
+                webhook_url: ctx.state.cached_data.webhook_url,
+                secret_key: ctx.state.cached_data.secret_key,
+                private_key: ctx.state.cached_data.public_key,
+                isActive: true,
+
+            })).then((x: any) => {
+                console.log("Added");
+            }).catch((err: any) => {
+                console.log(err);
+            })
+
+        ctx.status = 200;
+        ctx.body = {
+            otp: otpToBeSaved.value,
+            id: savedOtp.id
+        };
+    }
+
+
+
     @request("post", "/otp/whatsapp")
     @summary("generate whatsapp OTP")
     @security([{ Bearer: [] }])
@@ -445,84 +526,7 @@ export default class ProjectController {
         };
     }
 
-    @request("post", "/otp/sms")
-    @summary("generate sms OTP")
-    @security([{ Bearer: [] }])
-    @body(generateSMSOTPSchema)
 
-
-    public static async generateSMSOTP(ctx: Context): Promise<void> {
-        const otpData: GenerateSMSOTP = {
-            phone: ctx.request.body.phone,
-            expiry: ctx.request.body.expiry || 2,
-            meta: ctx.request.body.meta,
-
-        }
-
-        const id = ctx.state.cached_data.id;
-
-        const errors: ValidationError[] = await validate(otpData);
-        if (errors.length > 0) {
-            ctx.status = 400;
-            ctx.body = errors;
-            return;
-        }
-        let otpToBeSaved: any = {};
-
-        const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours() + otpData.expiry);
-
-        otpToBeSaved.expiry = currentDate;
-        otpToBeSaved.isActive = true;
-        otpToBeSaved.project = id;
-        otpToBeSaved.medium = Medium.SMS;
-        otpToBeSaved.recipientPhone = otpData.phone;
-        otpToBeSaved.type = Type.NUMBER;
-        otpToBeSaved.value = String(await GenerateOTP());
-
-        if (otpData.meta) {
-            otpToBeSaved.meta = JSON.stringify(otpData.meta);
-        }
-        else {
-            otpToBeSaved.meta = JSON.stringify({});
-        }
-
-
-        let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
-        savedOtp = await Otp.save(savedOtp);
-
-
-        let token = otpToBeSaved.value;
-
-        ProjectController.generateSMSandSend(otpData.phone, token)
-            .then(x => {
-                console.log("Sent")
-            });
-
-        setAsync(`${otpToBeSaved.value}::${id}`,
-            JSON.stringify({
-                meta: otpData.meta,
-                projectId: id,
-                otpId: savedOtp.id,
-                expiry: otpToBeSaved.expiry,
-                callback_url: ctx.state.cached_data.callback_url,
-                webhook_url: ctx.state.cached_data.webhook_url,
-                secret_key: ctx.state.cached_data.secret_key,
-                private_key: ctx.state.cached_data.public_key,
-                isActive: true,
-
-            })).then((x: any) => {
-                console.log("Added");
-            }).catch((err: any) => {
-                console.log(err);
-            })
-
-        ctx.status = 200;
-        ctx.body = {
-            otp: otpToBeSaved.value,
-            id: savedOtp.id
-        };
-    }
 
     @request("get", "/otp/verify/{token}")
     @summary("Verify otp")
@@ -656,13 +660,15 @@ export default class ProjectController {
         await SendEmail(payload);
     }
     private static generateSMSandSend = async (phone: string, token: string): Promise<void> => {
-        let message = `Your OTP is ${token}`;
+        let body = `Your OTP is ${token}`;
         
         const payload = {
             from: process.env.SOURCE_PHONE_NUMBER,
             to: phone,
-            message
+            body
         };
+        console.log(payload);
+        
         await SendSMS(payload);
     }
 

@@ -72,7 +72,7 @@ export class GenerateSMSOTP {
     meta: string;
 }
 export const generateSMSOTPSchema = {
-    phone: { type: "string", required: true, example: "+2349061696207" },
+    phone: { type: "string", required: true, example: "+2348168494355" },
     meta: { type: "object", required: false, example: { transactionHAsh: "baishqui389q8sqb98eh9", time: new Date() } },
     expiry: { type: "number", required: false, example: 8 },
 };
@@ -87,7 +87,7 @@ export interface WebHookPayload {
 }
 
 export interface SMSPayload {
-    message: string,
+    body: string,
     from: string,
     to: string
 }
