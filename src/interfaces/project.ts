@@ -63,3 +63,9 @@ export interface WebHookPayload {
     medium: string,
     type: string
 }
+
+export interface SMSPayload {
+    message: string,
+    from: string,
+    to: string
+}
