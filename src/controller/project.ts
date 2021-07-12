@@ -4,16 +4,16 @@ import { getManager } from "typeorm";
 import { RedisClient } from "redis";
 import { request, summary, body, responsesAll, tagsAll, security, path } from "koa-swagger-decorator";
 
-import { createProjectSchema, EditProject, editProjectSchema, GenerateEmailOTP, generateEmailOTPSchema } from "../interfaces/project";
+import { createProjectSchema, EditProject, editProjectSchema, GenerateEmailOTP, generateEmailOTPSchema, GenerateSMSOTP, generateSMSOTPSchema } from "../interfaces/project";
 import { Project } from "../entity/project";
 import { Medium, Otp, Type } from "../entity/otp";
 import { Subscription } from "../entity/subscription";
 import { DecryptPayload, EncryptPayload, EncryptPayloadForOTP, GenerateKey, GenerateOTP } from "../utils/crypto";
-import { SendEmail } from "../mediums/email";
 import { config } from "../utils/config";
 import { promisify } from "util";
 import { Token } from "../interfaces/user";
-import { SendWebHook } from "../mediums/webhook";
+
+import { SendSMS, SendWebHook, SendEmail } from "../mediums";
 
 const redisClient = new RedisClient({ url: process.env.REDIS_URL })
 const setAsync = promisify(redisClient.set).bind(redisClient);
@@ -270,7 +270,7 @@ export default class ProjectController {
         otpToBeSaved.isActive = true;
         otpToBeSaved.project = id;
         otpToBeSaved.medium = Medium.EMAIL;
-        otpToBeSaved.email = otpData.email;
+        otpToBeSaved.recipientEmail = otpData.email;
 
         if (otpData.meta) {
             otpToBeSaved.meta = JSON.stringify(otpData.meta);
@@ -340,8 +340,6 @@ export default class ProjectController {
             id: savedOtp.id
         };
     }
-
-
 
 
     @request("post", "/otp/whatsapp")
@@ -450,13 +448,12 @@ export default class ProjectController {
     @request("post", "/otp/sms")
     @summary("generate sms OTP")
     @security([{ Bearer: [] }])
-    @body(generateEmailOTPSchema)
+    @body(generateSMSOTPSchema)
 
 
-    public static async generateSmSOTP(ctx: Context): Promise<void> {
-        const otpData: GenerateEmailOTP = {
-            email: ctx.request.body.email,
-            type: ctx.request.body.type,
+    public static async generateSMSOTP(ctx: Context): Promise<void> {
+        const otpData: GenerateSMSOTP = {
+            phone: ctx.request.body.phone,
             expiry: ctx.request.body.expiry || 2,
             meta: ctx.request.body.meta,
 
@@ -478,8 +475,10 @@ export default class ProjectController {
         otpToBeSaved.expiry = currentDate;
         otpToBeSaved.isActive = true;
         otpToBeSaved.project = id;
-        otpToBeSaved.medium = Medium.EMAIL;
-        otpToBeSaved.email = otpData.email;
+        otpToBeSaved.medium = Medium.SMS;
+        otpToBeSaved.recipientPhone = otpData.phone;
+        otpToBeSaved.type = Type.NUMBER;
+        otpToBeSaved.value = String(await GenerateOTP());
 
         if (otpData.meta) {
             otpToBeSaved.meta = JSON.stringify(otpData.meta);
@@ -488,39 +487,14 @@ export default class ProjectController {
             otpToBeSaved.meta = JSON.stringify({});
         }
 
-        if (otpData.type == Type.NUMBER) {
-            otpToBeSaved.value = String(await GenerateOTP());
-            otpToBeSaved.type = Type.NUMBER;
-        }
-        else if (otpData.type == Type.URL) {
-            otpToBeSaved.value = String(GenerateKey(12));
-            otpToBeSaved.type = Type.URL;
-
-        }
-        else {
-            ctx.status = 400;
-            ctx.body = "Invalid OTP type!";
-            return;
-        }
 
         let savedOtp: Otp = Otp.create(otpToBeSaved as Otp);
         savedOtp = await Otp.save(savedOtp);
 
 
-        let token;
-        if (otpData.type == Type.URL) {
-            token = await EncryptPayloadForOTP({
-                projectId: id,
-                otpId: savedOtp.id,
-                value: otpToBeSaved.value,
+        let token = otpToBeSaved.value;
 
-            });
-        }
-        else {
-            token = otpToBeSaved.value;
-        }
-
-        ProjectController.generateEmailandSend(otpData.email, otpData.type, token)
+        ProjectController.generateSMSandSend(otpData.phone, token)
             .then(x => {
                 console.log("Sent")
             });
@@ -549,6 +523,7 @@ export default class ProjectController {
             id: savedOtp.id
         };
     }
+
     @request("get", "/otp/verify/{token}")
     @summary("Verify otp")
     @path({
@@ -679,6 +654,16 @@ export default class ProjectController {
             html,
         };
         await SendEmail(payload);
+    }
+    private static generateSMSandSend = async (phone: string, token: string): Promise<void> => {
+        let message = `Your OTP is ${token}`;
+        
+        const payload = {
+            from: process.env.SOURCE_PHONE_NUMBER,
+            to: phone,
+            message
+        };
+        await SendSMS(payload);
     }
 
 

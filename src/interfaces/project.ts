@@ -1,4 +1,4 @@
-import { IsEmail, IsInt, IsOptional, IsString, Length } from "class-validator";
+import { IsEmail, IsInt, IsOptional, IsPhoneNumber, IsString, Length } from "class-validator";
 
 export class CreateProject {
     @IsString()
@@ -52,6 +52,28 @@ export const generateEmailOTPSchema = {
     email: { type: "string", required: true, example: "tee@gee.mail" },
     type: { type: "string", required: true, example: "url" },
     meta: { type: "object", required: false, example: { tee: 1 } },
+    expiry: { type: "number", required: false, example: 8 },
+};
+
+
+export class GenerateSMSOTP {
+    @IsString()
+    @Length(0, 100)
+    @IsPhoneNumber()
+    phone: string;
+
+    @IsInt()
+    @IsOptional()
+    expiry: number;
+
+    @IsString()
+    @Length(0, 800)
+    @IsOptional()
+    meta: string;
+}
+export const generateSMSOTPSchema = {
+    phone: { type: "string", required: true, example: "+2349061696207" },
+    meta: { type: "object", required: false, example: { transactionHAsh: "baishqui389q8sqb98eh9", time: new Date() } },
     expiry: { type: "number", required: false, example: 8 },
 };
 
