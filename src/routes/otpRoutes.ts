@@ -11,6 +11,7 @@ otpRoute.get("/verify/:token", project.verifyEmailOTP);
 otpRoute.use(AuthorizeWithSecretKey)
 otpRoute.post("/email", project.generateEmailOTP);
 otpRoute.post("/sms", project.generateSMSOTP);
+otpRoute.post("/whatsapp", project.generateWhatsappOTP);
 
 /**
  * ToDo
