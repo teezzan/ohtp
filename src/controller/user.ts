@@ -296,7 +296,7 @@ export default class UserController {
     }
 
     @request("post", "/users/verify")
-    @summary("Verify Account")
+    @summary("Verify User Account")
     @body(tokenSchema)
 
     public static async verifyAccount(ctx: Context): Promise<void> {

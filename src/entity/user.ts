@@ -51,11 +51,11 @@ export class User  extends BaseEntity{
 }
 
 export const userSchema = {
-    id: { type: "number", required: false, example: 1 },
+    // id: { type: "number", required: false, example: 1 },
     name: { type: "string", required: true, example: "Javier" },
     email: { type: "string", required: true, example: "avileslopez.javier@gmail.com" },
     password: { type: "string", required: true, example: "avileslopez" },
-    otp: { type: "string", required: false, example: "128127" },
-    otp_expiry: { type: "string", required: false, example: "2021-06-20T11:48:27.777Z"},
-    isVerified: { type: "boolean", required: false, example: false },
+    // otp: { type: "string", required: false, example: "128127" },
+    // otp_expiry: { type: "string", required: false, example: "2021-06-20T11:48:27.777Z"},
+    // isVerified: { type: "boolean", required: false, example: false },
 };
