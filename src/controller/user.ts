@@ -103,6 +103,7 @@ export default class UserController {
             }, process.env.JWT_SECRET);
             ctx.status = 201;
             ctx.body = await publify({ ...user, token }, public_field);
+            return;
         }
         else if (user.isVerified == false) {
             await UserController.generateVerifyandSend(user);
@@ -350,7 +351,7 @@ export default class UserController {
             <a href='${config.serverURL}/accountverify/${token}' >
             Verify Account</a>`,
         };
-        await SendEmail(payload);
         console.log(`${config.serverURL}/accountverify/${token}`);
+        await SendEmail(payload);
     }
 }
