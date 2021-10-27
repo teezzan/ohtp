@@ -2,7 +2,7 @@
 
 ### A Secured Authentication Solution
 
-Secured systems are highly sort after but hard to create. OhTP provides a secure pipeline for your customer faing authentication needs.
+Secured systems are highly sort after but hard to create. OhTP provides a secure pipeline for your customer-facing authentication needs.
 ### The Why
 
 If you have ever tried to implement an authentication system from scratch, you would know how tasking it could be. OhTP helps to abstract the complexity by integrating with your software system via webhooks and API calls. You can authenticate your users by various means and not have to deal with how the authentication is carried out. 
